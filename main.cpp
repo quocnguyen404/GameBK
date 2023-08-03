@@ -58,9 +58,9 @@ void OBJ(int b) {
 	case 1: OJname = "tree";//name of the object
 		output << OJname << endl;
 		output << "C:/Users/GIGABYTE/source/repos/gameBK/tree.obj" << endl;//the path of the file object
-		output << "0,0,0" << endl;//location
-		output << "0,0,0" << endl;//size
-		output << "1,1,1" << endl;//swivel angle
+		output << RandomInt() << "," << RandomInt() << "," << 1 << endl;//location
+		output << 1 << "," << 1 << "," << 1 << endl;//size
+		output << 0 << "," << 0 << "," << 0 << endl;//swivel angle
 		break;
 	case 2: OJname = "house";
 		output << OJname << endl;
@@ -129,3 +129,23 @@ void move(int x, int y, int z, int t) {
 	cout << "you are in location " << x << "," << y << "," << z << " in the map " << t << endl;;
 }
 
+//struct Vector3
+//{
+//	int x, y, z;
+//};
+
+
+int RandomInt()
+{
+	srand(time(0));
+	int random = rand % 10 + 1;
+	return random;
+}
+
+
+//void LogVector3(Vector3 logVec)
+//{
+//	cout << logVec.x << ',';
+//	cout << logVec.y << ',';
+//	cout << logVec.z;
+//}
