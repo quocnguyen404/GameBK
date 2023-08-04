@@ -4,29 +4,45 @@
 #include <iostream>
 #include <tchar.h>
 #include<conio.h>
-
+#include<string>
 using namespace std;
 
 void CreateMap(int a);//creat a map
 void OBJ(int b);//input the information about object
 void Play();
-void Move(int x, int y, int z, int t);//move the character
-
+void Move(int t);//move the character
+int CountMap();
 
 struct Vector3
 {
 	int x, y, z;
-	Vector3() {};
+	Vector3() 
+	{
+		x = 0;
+		y = 0;
+		z = 0;
+	};
+
+	Vector3(int x, int y, int z);
 };
+
+Vector3::Vector3(int x, int y, int z)
+{
+	Vector3::x = x;
+	Vector3::y = y;
+	Vector3::z = z;
+}
+
 
 Vector3 CheckSpawn(Vector3);
 
 Vector3 RandomInt();
 
-int map[10][10];
+int map[11][11];
 
 int main() {
 	int choose;
+	int cm = CountMap();
 	while (true) {
 		system("cls");
 		cout << "MENU:" << endl;
@@ -38,7 +54,8 @@ int main() {
 		switch (choose) {
 		case 1:
 			system("cls");
-			CreateMap(1);
+			
+			CreateMap(cm+1);
 			cout << "you created a new map!" << endl;
 			Sleep(2000);
 			
@@ -98,11 +115,9 @@ void OBJ(int b) {
 
 }
 void Play() {
-	int x, y, z;//coordinates of the character
+	
 	int m;//the map that character in
-	x = 1;
-	y = 1;
-	z = 0;
+	
 	m = 1;
 	
 	//show map
@@ -116,7 +131,7 @@ void Play() {
 		if (_kbhit()) {
 			char c = _getch();
 			if (c == 'm') {
-				Move(x, y, z, m);
+				Move( m);
 
 			}
 			else if (c == 'e') {
@@ -140,24 +155,19 @@ void CreateMap(int a) {
 }
 
 
-void Move(int x, int y, int z, int t) {
+void Move( int t) {
 	cout << "where you want to go?" << endl;
 	cout << "enter the map that you want to go to:";
 	cin >> t;
-	cout << "enter the coordinates x in that map:";
-	cin >> x;
-	cout << "enter the coordinates y in that map:";
-	cin >> y;
-	cout << "enter the coordinates z in that map:";
-	cin >> z;
-	cout << "you are in location " << x << "," << y << "," << z << " in the map " << t << endl;;
+	
+	cout << "you are in the map " << t << endl;;
 }
 
 
 
 Vector3 RandomInt()
 {
-	srand(time(0));
+	srand((unsigned int)time(0));
 	Vector3 ranVec;
 	ranVec.x = rand() % 10 + 1;
 	ranVec.y = rand() % 10 + 1;
@@ -168,28 +178,43 @@ Vector3 RandomInt()
 
 Vector3 CheckSpawn(Vector3 checkVec)
 {
-	int x, y;
-
-	x = checkVec.x;
-	y = checkVec.y;
-
-	while (map[x][y] != 0)
+	while (!(map[checkVec.x][checkVec.y] == 0))
 	{
 		srand((int)time(0));
-		x = rand() % 10 + 1;
-		y = rand() % 10 + 1;
+		checkVec.x = rand() % 10 + 1;
+		checkVec.y = rand() % 10 + 1;
 	}
 
-	Vector3 ran;
-	ran.x = x;
-	ran.y = y;
-	return ran;
+	return checkVec;
 }
-
+int CountMap() {
+	ofstream output;
+	ifstream input;
+	input.open("map.txt");
+	int a = 0;
+	while (!input.eof())
+	{
+		char temp[255];
+		input.getline(temp, 255);
+		string line = temp;
+		char b[3];
+		for (int i = 0; i < 3; i++) {
+			b[i] = line[i];
+		}
+		if (b[0] == 'M' && b[1] == 'A' && b[2] == 'P')
+		{
+			a++;
+		}
+		//cout << line << endl;
+	}
+	input.close();
+	return a;
+}
 
 //void LogVector3(Vector3 logVec)
 //{
 //	cout << logVec.x << ',';
 //	cout << logVec.y << ',';
 //	cout << logVec.z;
-//}
+//}'
+
