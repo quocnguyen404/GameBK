@@ -23,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="tree.obj" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="map.txt" />
   </ItemGroup>
 </Project>

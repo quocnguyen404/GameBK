@@ -1,1 +1,2 @@
 C:\Users\GIGABYTE\Documents\GitHub\gameBK\x64\Debug\gameBK.exe
+C:\projects\Cpp\GameBKProject\gameBK\x64\Debug\gameBK.exe

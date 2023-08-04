@@ -1,30 +1,36 @@
 #include <stdio.h>
-#include<windows.h>
+#include <windows.h>
 #include <fstream>
 #include <iostream>
 #include <tchar.h>
-#include<conio.h>
-#include<string>
+#include <conio.h>
+#include <string>
+
 using namespace std;
 
-void CreateMap(int a);//creat a map
-void OBJ(int b);//input the information about object
-void Play();
-void Move(int t);//move the character
-int CountMap();
+enum ModulType
+{
+	TREE,
+	HOUSE,
+	CAR,
+	GOTO,
+};
 
 struct Vector3
 {
 	int x, y, z;
-	Vector3() 
-	{
-		x = 0;
-		y = 0;
-		z = 0;
-	};
+
+	Vector3();
 
 	Vector3(int x, int y, int z);
 };
+
+Vector3::Vector3()
+{
+	Vector3::x = 0;
+	Vector3::y = 0;
+	Vector3::z = 0;
+}
 
 Vector3::Vector3(int x, int y, int z)
 {
@@ -33,87 +39,121 @@ Vector3::Vector3(int x, int y, int z)
 	Vector3::z = z;
 }
 
-
+void Menu();
+void CreateMap(int);//creat a map
+void Modul(ModulType);//input the information about object
+void Play();
+void Move(int t);//move the character
+int CountMap();
 Vector3 CheckSpawn(Vector3);
-
-Vector3 RandomInt();
+Vector3 RandomVector3();
 
 int map[11][11];
 
-int main() {
-	int choose;
-	int cm = CountMap();
-	while (true) {
+
+
+int main() 
+{
+	Menu();
+
+	return 0;
+}
+
+
+void Menu()
+{
+	int option = 0;
+	int countMapInFile = CountMap();
+
+	while (option != 3) 
+	{
 		system("cls");
 		cout << "MENU:" << endl;
-		cout << "Choose what you want to do:" << endl;
 		cout << "1. Create a new map" << endl;
 		cout << "2. Play" << endl;
 		cout << "3. Exit" << endl;
-		cin >> choose;
-		switch (choose) {
-		case 1:
-			system("cls");
-			
-			CreateMap(cm+1);
-			cout << "you created a new map!" << endl;
-			Sleep(2000);
-			
-			break;
-		case 2: 
-			system("cls");
-			Play();
-			break;
-		case 3:
-			system("cls");
-			cout << "goodbye!";
-			return false;
-		default:
-			cout << "there are no that option! pls choose again!";
-			break;
+		cout << "Enter your option: ";
+		cin >> option;
+
+		switch (option) 
+		{
+			case 1:
+				system("cls");
+				CreateMap(countMapInFile + 1);
+				cout << "you created a new map!" << endl;
+				Sleep(2000);
+				break;
+
+			case 2:
+				system("cls");
+				Play();
+				break;
+
+			case 3:
+				system("cls");
+				cout << "goodbye!";
+				return;
+
+			default:
+				cout << "Doesn't exist that option" << endl;
+				system("pause");
+				break;
 		}
 	}
 
-	
-	return 0;
+	Menu();
 }
-void OBJ(int b) {
-	
+
+void Modul(ModulType modulType) 
+{
 	Vector3 objPos;
+	
 	objPos.x = RandomInt().x;
 	objPos.y = RandomInt().y;
 	objPos.z = 1;
 	
 	objPos.x = CheckSpawn(objPos).x;
 	objPos.y = CheckSpawn(objPos).y;
-
 	map[objPos.x][objPos.y] = 1;
 
 	ifstream input;
 	fstream output;
-	string OJname;
-	output.open("map.txt",ios::app);
-	output << "OBJ" << b << endl;
-	switch (b) {
-	case 1: OJname = "tree";//name of the object
-		output << OJname << endl;
-		output << "C:/Users/GIGABYTE/source/repos/gameBK/tree.obj" << endl;//the path of the file object
-		output << objPos.x << "," << objPos.y << "," << 1 << endl;//location
-		output << 1 << "," << 1 << "," << 1 << endl;//size
-		output << 0 << "," << 0 << "," << 0 << endl;//swivel angle
-		break;
-	case 2: OJname = "house";
-		output << OJname << endl;
-		output << "C:/Users/GIGABYTE/source/repos/gameBK/house.obj" << endl;//the path of the file object
-		output << objPos.x << "," << objPos.y << "," << 1 << endl;//location
-		output << 1 << "," << 1 << "," << 1 << endl;//size
-		output << 0 << "," << 0 << "," << 0 << endl;//swivel angle
-		break;
-		
-	}
-	output.close();
+	string objName;
 
+	output.open("map.txt",ios::app);
+	output << "OBJ" << modulType << endl;
+
+	switch (modulType) 
+	{
+		case 1: objName = "tree";//name of the object
+			output << objName << endl;
+			output << "C:/Users/GIGABYTE/source/repos/gameBK/tree.obj" << endl;//the path of the file object
+			output << objPos.x << "," << objPos.y << "," << 1 << endl;//location
+			output << 1 << "," << 1 << "," << 1 << endl;//size
+			output << 0 << "," << 0 << "," << 0 << endl;//swivel angle
+			break;
+
+		case 2: objName = "house";
+			output << objName << endl;
+			output << "C:/Users/GIGABYTE/source/repos/gameBK/house.obj" << endl;//the path of the file object
+			output << objPos.x << "," << objPos.y << "," << 1 << endl;//location
+			output << 1 << "," << 1 << "," << 1 << endl;//size
+			output << 0 << "," << 0 << "," << 0 << endl;//swivel angle
+			break;
+
+		case 3: objName = "car";
+			output << objName << endl;
+			output << "C:/Users/GIGABYTE/source/repos/gameBK/house.obj" << endl;//the path of the file object
+			output << objPos.x << "," << objPos.y << "," << 1 << endl;//location
+			output << 1 << "," << 1 << "," << 1 << endl;//size
+			output << 0 << "," << 0 << "," << 0 << endl;//swivel angle
+			break;
+	}
+
+	output.close();
 }
+
+
 void Play() {
 	
 	int m;//the map that character in
@@ -150,19 +190,19 @@ void CreateMap(int a) {
 	output.open("map.txt", ios::app);
 	output << "MAP" << a << endl;
 	output.close();
-	OBJ(1);
-	OBJ(2);
+	Modul(TREE);
+	Modul(HOUSE);
+	Modul(CAR);
 }
 
 
-void Move( int t) {
-	cout << "where you want to go?" << endl;
-	cout << "enter the map that you want to go to:";
+void Move(int t) 
+{
+	cout << "Where you want to go?" << endl;
+	cout << "Enter the map that you want to go to:";
 	cin >> t;
-	
-	cout << "you are in the map " << t << endl;;
+	cout << "You are in the map " << t << endl;;
 }
-
 
 
 Vector3 RandomInt()
@@ -187,34 +227,32 @@ Vector3 CheckSpawn(Vector3 checkVec)
 
 	return checkVec;
 }
-int CountMap() {
+
+
+int CountMap() 
+{
 	ofstream output;
 	ifstream input;
 	input.open("map.txt");
-	int a = 0;
+	
+	int mapCountVar = 0;
+
+	if (!input.eof())
+		return 0;
+
 	while (!input.eof())
 	{
-		char temp[255];
-		input.getline(temp, 255);
-		string line = temp;
-		char b[3];
-		for (int i = 0; i < 3; i++) {
-			b[i] = line[i];
-		}
-		if (b[0] == 'M' && b[1] == 'A' && b[2] == 'P')
-		{
-			a++;
-		}
+		string line;
+
+		getline(input, line);
+
+		line.erase(line.length() - 1);
+
+		if (line == "MAP")
+			mapCountVar++;
 		//cout << line << endl;
 	}
+
 	input.close();
-	return a;
+	return mapCountVar;
 }
-
-//void LogVector3(Vector3 logVec)
-//{
-//	cout << logVec.x << ',';
-//	cout << logVec.y << ',';
-//	cout << logVec.z;
-//}'
-
