@@ -1,2 +1,4 @@
 ﻿  main.cpp
+C:\projects\Cpp\GameBKProject\gameBK\Header\common.h(225,6): warning C4101: 'numberOfGoTo': unreferenced local variable
+C:\projects\Cpp\GameBKProject\gameBK\main.cpp(7,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   gameBK.vcxproj -> C:\projects\Cpp\GameBKProject\gameBK\x64\Debug\gameBK.exe

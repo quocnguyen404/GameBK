@@ -25,4 +25,9 @@
   <ItemGroup>
     <Text Include="map.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Header\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
