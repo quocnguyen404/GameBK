@@ -14,11 +14,10 @@ using namespace std;
 //////////////
 const int MAP_WIDTH = 11;
 const int MAP_LENGTH = 11;
+int MAP[MAP_WIDTH][MAP_LENGTH] = {};
 const string mapPath = "map.txt";
 const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
 const string objSubfix = ".obj";
-
-int MAP[MAP_WIDTH][MAP_LENGTH];
 
 enum ModulType
 {
@@ -158,7 +157,6 @@ void Modul::AddToMap(string mapPath)
 /// FUNCTION DECLARE ///
 ///////////////////////
 
-void Menu(); //base menu
 void CreateMap(int); //creat a map
 void CreateModul(ModulType); //input the information about object
 void Play(); //play game
@@ -172,52 +170,10 @@ Vector3 RandomVector3(int, int);  //random vector3 on ground
 //////////////////////
 /// FUNCTION BODY ///
 ////////////////////
-void Menu()
-{
-	int option = 0;
-
-	while (option != 3)
-	{
-		system("cls");
-		cout << "MENU:" << endl;
-		cout << "1. Create a new map" << endl;
-		cout << "2. Play" << endl;
-		cout << "3. Exit" << endl;
-		cout << "Enter your option: ";
-		cin >> option;
-
-		switch (option)
-		{
-		case 1:
-			system("cls");
-			CreateMap(CountMap() + 1);
-			cout << "you created a new map!" << endl;
-			Sleep(2000);
-			break;
-
-		case 2:
-			system("cls");
-			Play();
-			break;
-
-		case 3:
-			system("cls");
-			cout << "goodbye!";
-			return;
-
-		default:
-			cout << "Doesn't exist that option" << endl;
-			system("pause");
-			break;
-		}
-	}
-
-	Menu();
-}
 
 void CreateMap(int mapIndex)
 {
-	srand((unsigned int)time(0));
+	//srand((unsigned int)time(0));
 	int numberOfModul = RandomInRange(4, 7);
 	int numberOfTree = rand() % (numberOfModul + 1);
 	int numberOfHouse = rand() % (numberOfModul - numberOfTree + 1);
@@ -230,42 +186,15 @@ void CreateMap(int mapIndex)
 	output << "MAP" << mapIndex << endl;
 	output.close();
 
-	bool stop = false;
-	bool InitTree = false;
-	bool InitHouse = false;
-	bool InitCar = false;
+	for (int i = 0; i < numberOfTree; i++)
+		CreateModul(TREE);
 
-	while (1)
-	{
-		if (numberOfTree > 0)
-		{
-			CreateModul(TREE);
-			numberOfTree--;
-		}
-		else
-			InitTree = true;
+	for (int i = 0; i < numberOfHouse; i++)
+		CreateModul(HOUSE);
 
-		if (numberOfHouse > 0)
-		{
-			CreateModul(HOUSE);
-			numberOfHouse--;
-		}
-		else
-			InitHouse = true;
+	for (int i = 0; i < numberOfCar; i++)
+		CreateModul(CAR);
 
-		if (numberOfCar > 0)
-		{
-			CreateModul(CAR);
-			numberOfCar--;
-		}
-		else
-			InitCar = true;
-
-		stop = InitTree && InitHouse && InitCar;
-
-		if (stop)
-			break;
-	}
 }
 
 void CreateModul(ModulType modulType)
@@ -280,9 +209,9 @@ void CreateModul(ModulType modulType)
 
 void Play() {
 
-	int m;//the map that character in
+	int mapIndex;//the map that character in
 
-	m = 1;
+	mapIndex = 1;
 
 	//show map
 	bool p = true;
@@ -296,7 +225,6 @@ void Play() {
 			char c = _getch();
 			if (c == 'm') {
 				Move(m);
-
 			}
 			else if (c == 'e') {
 				p = false;

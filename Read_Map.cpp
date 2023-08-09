@@ -6,7 +6,7 @@ using namespace std;
 void Read_Map(int x)
 {
     fstream inputFile;
-    inputFile.open("Map.txt", ios::in);
+    inputFile.open("map.txt", ios::in);
     int mapCount = 0;
     string line;
     string content;
