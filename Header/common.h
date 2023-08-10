@@ -12,9 +12,19 @@ using namespace std;
 ////////////////
 ///  DEFINE ///
 //////////////
+const int MAP_WIDTH_OVERVIEW = 5;
+const int MAP_LENGTH_OVERVIEW = 5;
 const int MAP_WIDTH = 11;
 const int MAP_LENGTH = 11;
-int MAP[MAP_WIDTH][MAP_LENGTH] = {};
+int MAPOVERVIEW[MAP_WIDTH_OVERVIEW][MAP_LENGTH_OVERVIEW] = {
+	{ {0}, {0}, {0}, {0}, {0} },
+	{ {0}, {0}, {0}, {0}, {0} },
+	{ {0}, {0}, {0}, {0}, {0} },
+	{ {0}, {0}, {0}, {0}, {0} },
+	{ {0}, {0}, {0}, {0}, {0} }
+};
+
+															
 const string mapPath = "map.txt";
 const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
 const string objSubfix = ".obj";
@@ -28,6 +38,14 @@ enum ModulType
 	GOTO,
 };
 
+enum MapAround
+{
+	UP,
+	DOWN,
+	RIGHT,
+	LEFT,
+};
+
 map<ModulType, string> ModulTypeConvert
 {
 	{NONE, "NONE"},
@@ -37,6 +55,29 @@ map<ModulType, string> ModulTypeConvert
 	{ GOTO, "GOTO" },
 };
 
+
+//////////////////////////
+/// VECTOR2 STRUCTURE ///
+////////////////////////
+struct Vector2 
+{
+	int x, y;
+
+	Vector2();
+	Vector2(int x, int y);
+};
+
+Vector2::Vector2()
+{
+	Vector2::x = 0;
+	Vector2::y = 0;
+}
+
+Vector2::Vector2(int x, int y)
+{
+	Vector2::x = x;
+	Vector2::y = y;
+}
 
 
 //////////////////////////
@@ -67,6 +108,44 @@ Vector3::Vector3(int x, int y, int z)
 
 
 
+//////////////////
+/// MAP CLASS ///
+////////////////
+class Map
+{
+public:
+	int mapIndex;
+	int MAP[MAP_WIDTH][MAP_LENGTH] = {};
+	int numberOfModul;
+	int numberOfGoto;
+	Vector2 position;
+	int mapAround[4] = {};
+
+	map <ModulType, int> moduls
+	{
+		{TREE, 0},
+		{ HOUSE, 0 },
+		{ CAR, 0 },
+		{ GOTO, 0 },
+	};
+
+public:
+	Map() {}
+
+	Map(int mapIndex, Vector2 mapPosition);
+};
+
+Map::Map(int mapIndex, Vector2 mapPosition)
+{
+	Map::mapIndex = mapIndex;
+	Map::position = mapPosition;
+	Map::numberOfModul = rand() % 7 + 4;
+	Map::moduls[TREE] = rand() % (numberOfModul + 1);
+	Map::moduls[HOUSE] = rand() % (numberOfModul - Map::moduls[TREE] + 1);
+	Map::moduls[CAR] = numberOfModul - Map::moduls[CAR] - Map::moduls[HOUSE];
+}
+
+
 ////////////////////
 /// MODUL CLASS ///
 //////////////////
@@ -90,6 +169,8 @@ public:
 	void GenerateFile();
 
 	void AddToMap(string mapPath);
+
+	void WriteToMap();
 };
 
 //modul constructor
@@ -152,93 +233,78 @@ void Modul::AddToMap(string mapPath)
 	modulFile.close();
 }
 
+void Modul::WriteToMap()
+{
+	cout << "OBJ" << modulType << endl;
+	cout << name << endl;
+	cout << position.x << ',' << position.y << ',' << position.z << endl;
+	cout << scale.x << ',' << scale.y << ',' << scale.z << endl;
+	cout << rotation.x << ',' << rotation.y << ',' << rotation.z << endl;
+}
+
 
 /////////////////////////
 /// FUNCTION DECLARE ///
 ///////////////////////
 
-void CreateMap(int); //creat a map
-void CreateModul(ModulType); //input the information about object
-void Play(); //play game
+Map CreateMap(int, Vector2); //creat a map
+void CreateModul(ModulType, Map); //input the information about object
 void Move(int t); //move character
 int CountMap(); // count map exist in file map.txt
-Vector3 CheckSpawn(Vector3); //chech position in map that exist modul yet
+void ReadMap(int); // read map
+Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet
 int RandomInRange(int, int); //random int number in range
 Vector3 RandomVector3(int, int);  //random vector3 on ground
+Vector2 RandomVector2(int, int); // random vector2
+void PrintMapOverview(); //print 2x2 matrix overview of maps
+void LoadMapAround(Map&); //load map around of a map
 
 
 //////////////////////
 /// FUNCTION BODY ///
 ////////////////////
 
-void CreateMap(int mapIndex)
+Map CreateMap(int mapIndex, Vector2 position)
 {
-	//srand((unsigned int)time(0));
-	int numberOfModul = RandomInRange(4, 7);
-	int numberOfTree = rand() % (numberOfModul + 1);
-	int numberOfHouse = rand() % (numberOfModul - numberOfTree + 1);
-	int numberOfCar = numberOfModul - numberOfTree - numberOfHouse;
-	int numberOfGoTo;
+	Map map(mapIndex, position);
+
+	MAPOVERVIEW[map.position.x][map.position.y] = mapIndex;
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (map.mapAround[i] != 0)
+			map.numberOfGoto++;
+	}
 
 	fstream output;
-
 	output.open(mapPath, ios::app);
 	output << "MAP" << mapIndex << endl;
 	output.close();
 
-	for (int i = 0; i < numberOfTree; i++)
-		CreateModul(TREE);
+	for (int i = 0; i < map.moduls[TREE]; i++)
+		CreateModul(TREE, map);
 
-	for (int i = 0; i < numberOfHouse; i++)
-		CreateModul(HOUSE);
+	for (int i = 0; i < map.moduls[HOUSE]; i++)
+		CreateModul(HOUSE, map);
 
-	for (int i = 0; i < numberOfCar; i++)
-		CreateModul(CAR);
+	for (int i = 0; i < map.moduls[CAR]; i++)
+		CreateModul(CAR, map);
 
+	for (int i = 0; i < map.moduls[GOTO]; i++)
+		CreateModul(GOTO, map);
+
+	return map;
 }
 
-void CreateModul(ModulType modulType)
+void CreateModul(ModulType modulType, Map map)
 {
-	Vector3 modPos = RandomVector3(0, MAP_WIDTH);
+	Vector3 modPos = RandomVector3(0, MAP_WIDTH); //initiate random position for modul
+	modPos = CheckSpawn(modPos, map); // checking on map position is exist any modul
 	Vector3 modScale(1, 1, 1);
 	Vector3 modRotate = RandomVector3(0, 360);
-
+	map.MAP[modPos.x][modPos.y] = modulType;
 	Modul modul(modulType, modPos, modScale, modRotate);
 	modul.AddToMap(mapPath);
-}
-
-void Play() {
-
-	int mapIndex;//the map that character in
-
-	mapIndex = 1;
-
-	//show map
-	bool p = true;
-
-	cout << "press m to move" << endl;
-	cout << "press e to exit to menu" << endl;
-	while (p) {
-
-		//move the character
-		if (_kbhit()) {
-			char c = _getch();
-			if (c == 'm') {
-				Move(m);
-			}
-			else if (c == 'e') {
-				p = false;
-			}
-		}
-	}
-}
-
-void Move(int t)
-{
-	cout << "Where you want to go?" << endl;
-	cout << "Enter the map that you want to go to:";
-	cin >> t;
-	cout << "You are in the map " << t << endl;;
 }
 
 int CountMap()
@@ -265,15 +331,45 @@ int CountMap()
 	return mapCountVar;
 }
 
-Vector3 CheckSpawn(Vector3 checkVec)
+void ReadMap(int x)
 {
-	while (!(MAP[checkVec.x][checkVec.y] == 0))
+	fstream inputFile;
+	inputFile.open("map.txt", ios::in);
+	int mapCount = 0;
+	string line;
+	string content;
+
+	while (getline(inputFile, line))
 	{
-		srand((int)time(0));
-		checkVec.x = rand() % 10 + 1;
-		checkVec.y = rand() % 10 + 1;
+		if (line.find("MAP") != string::npos)
+		{
+			mapCount++;
+			if (mapCount >= x && mapCount < x + 1)
+			{
+				content += line + "\n";
+			}
+			if (mapCount > x + 1)
+				break;
+		}
+		else if (mapCount >= x && mapCount < x + 1)
+		{
+			content += line + "\n";
+		}
 	}
 
+	inputFile.close();
+
+	cout << content;
+
+}
+
+Vector3 CheckSpawn(Vector3 checkVec, Map map)
+{
+	while (!(map.MAP[checkVec.x][checkVec.y] == 0))
+	{
+		srand((int)time(0));
+		checkVec = RandomVector3(0, MAP_LENGTH);
+	}
 	return checkVec;
 }
 
@@ -289,4 +385,70 @@ Vector3 RandomVector3(int min, int max)
 	ranVec.y = rand() % max + min;
 	ranVec.z = 1;
 	return ranVec;
+}
+
+Vector2 RandomVector2(int min, int max)
+{
+	Vector2 ranVec;
+	ranVec.x = rand() % max + min;
+	ranVec.y = rand() % max + min;
+	return ranVec;
+}
+
+void PrintMapOverview()
+{
+	for (int i = 0; i < MAP_WIDTH_OVERVIEW; i++)
+	{
+		for (int j = 0; j < MAP_LENGTH_OVERVIEW; j++)
+		{
+			cout << MAPOVERVIEW[i][j] << " ";
+		}
+		cout << endl;
+	}
+}
+
+void LoadMapAround(Map &map)
+{
+	int currentMapAround = 0;
+	map.mapAround[UP] = MAPOVERVIEW[map.position.x][map.position.y - 1]; //up
+	map.mapAround[DOWN] = MAPOVERVIEW[map.position.x][map.position.y + 1]; //down
+	map.mapAround[RIGHT] = MAPOVERVIEW[map.position.x + 1][map.position.y]; //right
+	map.mapAround[LEFT] = MAPOVERVIEW[map.position.x - 1][map.position.y]; //left
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (map.mapAround[i] != 0)
+			currentMapAround++;
+	}
+
+	int gotoLoadYet = abs(map.numberOfGoto - currentMapAround);
+
+	if (gotoLoadYet == 0)
+		return;
+
+	string endOfMap = "MAP" + to_string(map.mapIndex+1);
+	string line = "";
+	Vector3 scale(1, 1, 1);
+	bool notDone = true;
+	fstream mapFile(mapPath, ios::in | ios::out);
+
+	while (notDone)
+	{
+		getline(mapFile, line);
+
+		if (line.find(endOfMap))
+			mapFile.seekp(-static_cast<streamoff>(line.length() + 1), ios_base::cur);
+		else
+			break;
+
+		for (int i = 0; i < gotoLoadYet; i++)
+		{
+			Modul Goto(GOTO, CheckSpawn(RandomVector3(0, MAP_LENGTH), map), scale, RandomVector3(0, 360));
+			Goto.WriteToMap();
+		}
+
+		notDone = false;
+	}
+
+	mapFile.close();
 }

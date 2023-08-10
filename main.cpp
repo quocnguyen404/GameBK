@@ -2,11 +2,23 @@
 
 using namespace std;
 
-
 int main() 
 {
-	srand(time(0));
+	srand((unsigned int)time(0));
+	Map maps[25] = {};
 
+	// Initiate default maps
+	ofstream file;
+	file.open(mapPath, ofstream::trunc);
+	file.close();
+
+	Vector2 mapPos1(1,1);
+	Vector2 mapPos2(1,2);
+	Vector2 mapPos3(1,3);
+
+	maps[1] = CreateMap(1, mapPos1);
+	maps[2] = CreateMap(2, mapPos2);
+	maps[3] = CreateMap(3, mapPos3);
 
 	int option = 0;
 
@@ -22,27 +34,116 @@ int main()
 
 		switch (option)
 		{
-		case 1:
-			system("cls");
-			CreateMap(CountMap()+1);
-			cout << "you created a new map!" << endl;
-			Sleep(1000);
-			break;
+			case 1:
+			{
+				system("cls");
+				Vector2 position;
+				bool isExistMap = true;
 
-		case 2:
-			system("cls");
-			Play();
-			break;
+				while (isExistMap)
+				{
+					cout << "Enter map position x,y: ";
+					cin >> position.x >> position.y;
 
-		case 3:
-			system("cls");
-			cout << "goodbye!";
-			return 0;
+					if (MAPOVERVIEW[position.x][position.y] == 0)
+						isExistMap = false;
+					else
+						cout << "Exist map at position " << position.x << " " << position.y << endl;
+				}
 
-		default:
-			cout << "Doesn't exist that option" << endl;
-			system("pause");
-			break;
+				maps[CountMap()] = CreateMap(CountMap() + 1, position);
+				cout << "you created a new map!" << endl;
+				Sleep(1000);
+				break;
+			}
+				
+			case 2:
+			{
+				system("cls");
+				int preMapIndex;
+				int mapIndex;//the map that character in
+				mapIndex = 0;
+				preMapIndex = 0;
+				//show map
+				bool isPlaying = true;
+				cout << "Press m to move" << endl;
+				cout << "Press e to exit to menu" << endl;
+
+				while (isPlaying)
+				{
+					if (_kbhit()) 
+					{
+						char c = _getch();
+						if (c == 'm') 
+						{
+							cout << "Where you want to go?" << endl;
+							cout << "Enter the map that you want to go to: ";
+							cin >> mapIndex;
+
+							bool enterMapCanGo = false;
+
+							for (int i = 0; i < 4; i++)
+							{
+								if (preMapIndex == 0)
+									break;
+
+								if (preMapIndex != 0 && maps[preMapIndex].mapAround[i] == mapIndex)
+									enterMapCanGo = true;
+							}
+
+							//first time move to any map
+							if (preMapIndex == 0)
+								enterMapCanGo = true;
+							
+							if (enterMapCanGo)
+							{
+								ReadMap(mapIndex);
+
+								LoadMapAround(maps[mapIndex]);
+
+								cout << "You are in the map " << mapIndex << endl;
+								preMapIndex = mapIndex;
+							}
+							else
+							{
+								cout << "You can't go to " << mapIndex << endl;
+								mapIndex = preMapIndex;
+							}
+
+							cout << "Map you can go to: ";
+							for (int i = 0; i < 4; i++)
+							{
+								int map = maps[mapIndex].mapAround[i];
+								if (map != 0)
+									cout << map << " ";
+							}
+							cout << endl;
+
+							PrintMapOverview();
+
+							
+						}
+						else if (c == 'e') 
+							isPlaying = false;
+					}
+				}
+				break;
+			}
+
+			case 3:
+			{
+				system("cls");
+				cout << "goodbye!";
+				return 0;
+			}
+
+			default:
+			{
+				cout << "Doesn't exist that option" << endl;
+				system("pause");
+				break;
+			}
+				
 		}
 	}
 	return 0;
