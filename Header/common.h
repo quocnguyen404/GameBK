@@ -253,7 +253,7 @@ Map CreateMap(int, Vector2, Map(&)[MAXMAPNUMBER]); //creat a map
 void CreateModul(ModulType, Map&, int);
 Modul InitiateModul(ModulType, Map&); //input the information about object
 int CountMap(); // count map exist in file map.txt
-void ReadMap(int); // read map
+void ReadMap(Map&); // read map
 Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet
 int RandomInRange(int, int); //random int number in range
 Vector3 RandomVector3(int, int);  //random vector3 on ground
