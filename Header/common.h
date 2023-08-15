@@ -7,11 +7,13 @@
 #include <conio.h>
 #include <string>
 #include <map>
+
 using namespace std;
 
 ////////////////
 ///  DEFINE ///
 //////////////
+const int MAXMAPNUMBER = 25;
 const int MAP_WIDTH_OVERVIEW = 5;
 const int MAP_LENGTH_OVERVIEW = 5;
 const int MAP_WIDTH = 11;
@@ -27,6 +29,7 @@ int MAPOVERVIEW[MAP_WIDTH_OVERVIEW][MAP_LENGTH_OVERVIEW] = {
 															
 const string mapPath = "map.txt";
 const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
+const string mapFilePath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\map\\";
 const string objSubfix = ".obj";
 
 enum ModulType
@@ -120,6 +123,8 @@ public:
 	int numberOfGoto;
 	Vector2 position;
 	int mapAround[4] = {};
+	string name;
+	string path;
 
 	map <ModulType, int> moduls
 	{
@@ -130,19 +135,51 @@ public:
 	};
 
 public:
-	Map() {}
+	Map();
 
 	Map(int mapIndex, Vector2 mapPosition);
+
+public: 
+	void GenerateFile();
 };
+
+Map::Map()
+{
+	Map::mapIndex = 0;
+	Map::numberOfModul = 0;
+	Map::numberOfGoto = 0;
+	Map::position.x = 0;
+	Map::position.y = 0;
+	Map::name = "MAP" + to_string(Map::mapIndex);
+	Map::path = mapFilePath + Map::name + ".txt";
+}
 
 Map::Map(int mapIndex, Vector2 mapPosition)
 {
 	Map::mapIndex = mapIndex;
 	Map::position = mapPosition;
 	Map::numberOfModul = rand() % 7 + 4;
+	Map::numberOfGoto = 0;
 	Map::moduls[TREE] = rand() % (numberOfModul + 1);
 	Map::moduls[HOUSE] = rand() % (numberOfModul - Map::moduls[TREE] + 1);
 	Map::moduls[CAR] = numberOfModul - Map::moduls[CAR] - Map::moduls[HOUSE];
+	Map::name = "MAP" + to_string(Map::mapIndex);
+	Map::path = mapFilePath + Map::name + ".txt";
+	GenerateFile();
+}
+
+void Map::GenerateFile()
+{
+	ofstream mapFile;
+	mapFile.open(path, ios::out);
+
+	if (!mapFile.is_open())
+	{
+		cout << "Open generate obj unsuccess" << endl;
+	}
+
+	mapFile << "MAP" + to_string(Map::mapIndex) << endl;
+	mapFile.close();
 }
 
 
@@ -212,10 +249,9 @@ void Modul::GenerateFile()
 /// FUNCTION DECLARE ///
 ///////////////////////
 
-Map CreateMap(int, Vector2); //creat a map
+Map CreateMap(int, Vector2, Map(&)[MAXMAPNUMBER]); //creat a map
 void CreateModul(ModulType, Map&, int);
 Modul InitiateModul(ModulType, Map&); //input the information about object
-void Move(int t); //move character
 int CountMap(); // count map exist in file map.txt
 void ReadMap(int); // read map
 Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet
@@ -229,58 +265,45 @@ void LoadMapAround(Map&); //load map around of a map
 //////////////////////
 /// FUNCTION BODY ///
 ////////////////////
-Map CreateMap(int mapIndex, Vector2 position)
+Map CreateMap(int mapIndex, Vector2 position, Map (&maps)[MAXMAPNUMBER])
 {
 	Map map(mapIndex, position);
 
 	MAPOVERVIEW[map.position.x][map.position.y] = mapIndex;
-
-	for (int i = 0; i < 4; i++)
-	{
-		if (map.mapAround[i] != 0)
-			map.numberOfGoto++;
-	}
-
-	fstream mapFile;
-	mapFile.open(mapPath, ios::app);
-	mapFile << "MAP" << mapIndex << endl;
-	mapFile.close();
+	
 
 	CreateModul(TREE, map, map.moduls[TREE]);
 	CreateModul(HOUSE, map, map.moduls[HOUSE]);
 	CreateModul(CAR, map, map.moduls[CAR]);
-	CreateModul(GOTO, map, map.moduls[GOTO]);
 
+	////Load map around of this map (is creating)
+	LoadMapAround(map);
 
+	//Load map near by this map (is creating)
+	int mapAroundIndex = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		mapAroundIndex = map.mapAround[i];
+		if (mapAroundIndex != 0)
+			LoadMapAround(maps[mapAroundIndex]);
+	}
 	return map;
 }
 
 void CreateModul(ModulType modulType, Map& map, int numberOfModulToCreate)
 {
-	string endOfMap = "MAP" + to_string(map.mapIndex + 1);
-	string line = "";
-	Vector3 scale(1, 1, 1);
-	bool notDone = true;
-	Modul modul;
-	fstream mapFile(mapPath, ios::out | ios::in | ios::app);
+	ofstream mapFile;
+	mapFile.open(map.path, ios::app);
 
-	while (notDone)
+	for (int i = 0; i < numberOfModulToCreate; i++)
 	{
-		getline(mapFile, line);
-		if (line.find(endOfMap))
-			mapFile.seekp(-static_cast<streamoff>(line.length() + 1), ios_base::cur);
-		else
-			break;
-		for (int i = 0; i < numberOfModulToCreate; i++)
-		{
-			modul = InitiateModul(modulType, map);
-			mapFile << "OBJ" << modulType << endl;
-			mapFile << modul.name << endl;
-			mapFile << modul.position.x << ',' << modul.position.y << ',' << modul.position.z << endl;
-			mapFile << scale.x << ',' << scale.y << ',' << scale.z << endl;
-			mapFile << modul.rotation.x << ',' << modul.rotation.y << ',' << modul.rotation.z << endl;
-		}
-		notDone = false;
+		Modul modul = InitiateModul(modulType, map);
+		mapFile << "OBJ" << modulType << endl;
+		mapFile << modul.name << endl;
+		mapFile << modul.position.x << "," << modul.position.y << "," << modul.position.z << endl;
+		mapFile << modul.scale.x << "," << modul.scale.y << "," << modul.scale.z << endl;
+		mapFile << modul.rotation.x << "," << modul.rotation.y << "," << modul.rotation.z << endl;
+		mapFile << modul.path << endl;
 	}
 
 	mapFile.close();
@@ -322,36 +345,22 @@ int CountMap()
 	return mapCountVar;
 }
 
-void ReadMap(int x)
+void ReadMap(Map &map)
 {
-	fstream inputFile;
-	inputFile.open("map.txt", ios::in);
+
+	ifstream inputFile;
+	inputFile.open(map.path);
+	
 	int mapCount = 0;
 	string line;
 	string content;
 
 	while (getline(inputFile, line))
-	{
-		if (line.find("MAP") != string::npos)
-		{
-			mapCount++;
-			if (mapCount >= x && mapCount < x + 1)
-			{
-				content += line + "\n";
-			}
-			if (mapCount > x + 1)
-				break;
-		}
-		else if (mapCount >= x && mapCount < x + 1)
-		{
-			content += line + "\n";
-		}
-	}
+		cout << line << endl;
 
 	inputFile.close();
 
 	cout << content;
-
 }
 
 Vector3 CheckSpawn(Vector3 checkVec, Map map)
@@ -401,10 +410,10 @@ void PrintMapOverview()
 void LoadMapAround(Map &map)
 {
 	int currentMapAround = 0;
-	map.mapAround[UP] = MAPOVERVIEW[map.position.x][map.position.y - 1]; //up
-	map.mapAround[DOWN] = MAPOVERVIEW[map.position.x][map.position.y + 1]; //down
-	map.mapAround[RIGHT] = MAPOVERVIEW[map.position.x + 1][map.position.y]; //right
-	map.mapAround[LEFT] = MAPOVERVIEW[map.position.x - 1][map.position.y]; //left
+	map.mapAround[UP] = MAPOVERVIEW[map.position.x-1][map.position.y]; //up
+	map.mapAround[DOWN] = MAPOVERVIEW[map.position.x+1][map.position.y]; //down
+	map.mapAround[RIGHT] = MAPOVERVIEW[map.position.x][map.position.y+1]; //right
+	map.mapAround[LEFT] = MAPOVERVIEW[map.position.x][map.position.y-1]; //left
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -414,10 +423,32 @@ void LoadMapAround(Map &map)
 
 	int gotoLoadYet = abs(map.numberOfGoto - currentMapAround);
 
+	for (int i = 0; i < gotoLoadYet; i++)
+		map.numberOfGoto++;
+
 	if (gotoLoadYet == 0)
 		return;
 
 	CreateModul(GOTO, map, gotoLoadYet);
 }
 
+void LoadAllMapToFile(Map(&maps)[MAXMAPNUMBER])
+{
+	ofstream allMap(mapPath, ios::trunc);
 
+	for (int i = 0; i < MAXMAPNUMBER; i++)
+	{
+		if (maps[i].mapIndex != 0)
+		{
+			ifstream currentMap(maps[i].path);
+
+			for (string content; getline(currentMap, content);)
+				allMap << content << endl;
+
+			currentMap.close();
+		}
+	}
+
+	allMap.close();
+
+}

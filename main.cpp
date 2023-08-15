@@ -5,23 +5,23 @@ using namespace std;
 int main() 
 {
 	srand((unsigned int)time(0));
-	Map maps[25] = {};
+	Map maps[MAXMAPNUMBER] = {};
 
 	// Initiate default maps
-	ofstream file;
-	file.open(mapPath, ofstream::trunc);
-	file.close();
+	Vector2 mapPos1(1, 1);
+	Vector2 mapPos2(1, 2);
+	Vector2 mapPos3(1, 3);
 
-	Vector2 mapPos1(1,1);
-	Vector2 mapPos2(1,2);
-	Vector2 mapPos3(1,3);
+	//ofstream file;
+	//file.open(mapPath, ofstream::trunc);
+	//file.close();
 
-	maps[1] = CreateMap(1, mapPos1);
-	maps[2] = CreateMap(2, mapPos2);
-	maps[3] = CreateMap(3, mapPos3);
+	maps[1] = CreateMap(1, mapPos1, maps);
+	maps[2] = CreateMap(2, mapPos2, maps);
+	maps[3] = CreateMap(3, mapPos3, maps);
+	LoadAllMapToFile(maps);
 
 	int option = 0;
-
 	while (option != 3)
 	{
 		system("cls");
@@ -36,6 +36,11 @@ int main()
 		{
 			case 1:
 			{
+				if (CountMap() >= MAXMAPNUMBER)
+				{
+					cout << "Full map!!";
+					break;
+				}
 				system("cls");
 				Vector2 position;
 				bool isExistMap = true;
@@ -51,8 +56,9 @@ int main()
 						cout << "Exist map at position " << position.x << " " << position.y << endl;
 				}
 
-				maps[CountMap()] = CreateMap(CountMap() + 1, position);
+				maps[CountMap()+1] = CreateMap(CountMap() + 1, position, maps);
 				cout << "you created a new map!" << endl;
+				LoadAllMapToFile(maps);
 				Sleep(1000);
 				break;
 			}
@@ -60,23 +66,28 @@ int main()
 			case 2:
 			{
 				system("cls");
+				int modulType;
 				int preMapIndex;
 				int mapIndex;//the map that character in
+				modulType = 0;
+				int mapAroundIndex = 0;
 				mapIndex = 0;
 				preMapIndex = 0;
+
 				//show map
 				bool isPlaying = true;
 				cout << "Press m to move" << endl;
 				cout << "Press e to exit to menu" << endl;
+				cout << "Press a to add modul in map" << endl;
 
 				while (isPlaying)
 				{
 					if (_kbhit()) 
 					{
+						system("cls");
 						char c = _getch();
 						if (c == 'm') 
 						{
-							cout << "Where you want to go?" << endl;
 							cout << "Enter the map that you want to go to: ";
 							cin >> mapIndex;
 
@@ -97,9 +108,7 @@ int main()
 							
 							if (enterMapCanGo)
 							{
-								ReadMap(mapIndex);
-
-								LoadMapAround(maps[mapIndex]);
+								ReadMap(maps[mapIndex]);
 
 								cout << "You are in the map " << mapIndex << endl;
 								preMapIndex = mapIndex;
@@ -123,6 +132,13 @@ int main()
 
 							
 						}
+						else if (c == 'a')
+						{
+							cout << "Enter map index to add modul" << endl;
+							cin >> mapIndex;
+							cout << "Enter modul type 1:Tree, 2:House, 3:Car" << endl;
+							cin >> modulType;
+						}
 						else if (c == 'e') 
 							isPlaying = false;
 					}
@@ -140,7 +156,6 @@ int main()
 			default:
 			{
 				cout << "Doesn't exist that option" << endl;
-				system("pause");
 				break;
 			}
 				

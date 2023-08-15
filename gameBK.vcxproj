@@ -131,10 +131,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="map.txt" />
+    <ClInclude Include="Header\common.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header\common.h" />
+    <Text Include="map.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
