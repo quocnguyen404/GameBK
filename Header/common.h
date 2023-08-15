@@ -10,15 +10,21 @@
 
 using namespace std;
 
-////////////////
-///  DEFINE ///
-//////////////
+/*-----------[CONSTANTS]-----------*/
 const int MAXMAPNUMBER = 25;
 const int MAP_WIDTH_OVERVIEW = 5;
 const int MAP_LENGTH_OVERVIEW = 5;
 const int MAP_WIDTH = 11;
 const int MAP_LENGTH = 11;
-int MAPOVERVIEW[MAP_WIDTH_OVERVIEW][MAP_LENGTH_OVERVIEW] = {
+const string mapPath = "map.txt";
+const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
+const string mapFilePath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\map\\";
+const string objSubfix = ".obj";
+
+
+/*-----------[LOCAL VARIABLE]-----------*/
+int MAPOVERVIEW[MAP_WIDTH_OVERVIEW][MAP_LENGTH_OVERVIEW] = 
+{
 	{ {0}, {0}, {0}, {0}, {0} },
 	{ {0}, {0}, {0}, {0}, {0} },
 	{ {0}, {0}, {0}, {0}, {0} },
@@ -26,12 +32,7 @@ int MAPOVERVIEW[MAP_WIDTH_OVERVIEW][MAP_LENGTH_OVERVIEW] = {
 	{ {0}, {0}, {0}, {0}, {0} }
 };
 
-															
-const string mapPath = "map.txt";
-const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
-const string mapFilePath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\map\\";
-const string objSubfix = ".obj";
-
+/*----------------[ENUM]----------------*/
 enum ModulType
 {
 	NONE,
@@ -49,6 +50,8 @@ enum MapAround
 	LEFT,
 };
 
+
+/*----------------[ENUM DEFINE]----------------*/
 map<ModulType, string> ModulTypeConvert
 {
 	{NONE, "NONE"},
@@ -59,9 +62,9 @@ map<ModulType, string> ModulTypeConvert
 };
 
 
-//////////////////////////
-/// VECTOR2 STRUCTURE ///
-////////////////////////
+
+/*----------------[STRUCTURE]----------------*/
+//[VECTOR2]
 struct Vector2 
 {
 	int x, y;
@@ -82,10 +85,7 @@ Vector2::Vector2(int x, int y)
 	Vector2::y = y;
 }
 
-
-//////////////////////////
-/// VECTOR3 STRUCTURE ///
-////////////////////////
+//[VECTOR3]
 struct Vector3
 {
 	int x, y, z;
@@ -110,10 +110,8 @@ Vector3::Vector3(int x, int y, int z)
 }
 
 
-
-//////////////////
-/// MAP CLASS ///
-////////////////
+/*----------------[CLASS]----------------*/
+//[MAP]
 class Map
 {
 public:
@@ -183,9 +181,7 @@ void Map::GenerateFile()
 }
 
 
-////////////////////
-/// MODUL CLASS ///
-//////////////////
+//[MODUL]
 class Modul
 {
 public:
@@ -206,7 +202,6 @@ public:
 	void GenerateFile();
 };
 
-//modul constructor
 Modul::Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotation)
 {
 	Modul::modulType = modulType;
@@ -219,7 +214,6 @@ Modul::Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotat
 	Modul::GenerateFile();
 }
 
-// generate object file
 void Modul::GenerateFile()
 {
 	ofstream modulFile;
@@ -245,10 +239,8 @@ void Modul::GenerateFile()
 	modulFile.close();
 }
 
-/////////////////////////
-/// FUNCTION DECLARE ///
-///////////////////////
 
+/*----------------[PROTOTYPE]----------------*/
 Map CreateMap(int, Vector2, Map(&)[MAXMAPNUMBER]); //creat a map
 void CreateModul(ModulType, Map&, int);
 Modul InitiateModul(ModulType, Map&); //input the information about object
@@ -260,11 +252,11 @@ Vector3 RandomVector3(int, int);  //random vector3 on ground
 Vector2 RandomVector2(int, int); // random vector2
 void PrintMapOverview(); //print 2x2 matrix overview of maps
 void LoadMapAround(Map&); //load map around of a map
+void LoadAllMapToFile(Map(&)[MAXMAPNUMBER]);
 
 
-//////////////////////
-/// FUNCTION BODY ///
-////////////////////
+
+/*----------------[FUNCTION]----------------*/
 Map CreateMap(int mapIndex, Vector2 position, Map (&maps)[MAXMAPNUMBER])
 {
 	Map map(mapIndex, position);

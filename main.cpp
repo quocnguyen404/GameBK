@@ -5,21 +5,21 @@ using namespace std;
 int main() 
 {
 	srand((unsigned int)time(0));
+
+	/*-----------[INITIATE DEFAULT MAP]-----------*/
 	Map maps[MAXMAPNUMBER] = {};
 
-	// Initiate default maps
 	Vector2 mapPos1(1, 1);
 	Vector2 mapPos2(1, 2);
 	Vector2 mapPos3(1, 3);
-
-	//ofstream file;
-	//file.open(mapPath, ofstream::trunc);
-	//file.close();
 
 	maps[1] = CreateMap(1, mapPos1, maps);
 	maps[2] = CreateMap(2, mapPos2, maps);
 	maps[3] = CreateMap(3, mapPos3, maps);
 	LoadAllMapToFile(maps);
+
+
+	/*-----------[MENU]-----------*/
 
 	int option = 0;
 	while (option != 3)
@@ -57,7 +57,7 @@ int main()
 				}
 
 				maps[CountMap()+1] = CreateMap(CountMap() + 1, position, maps);
-				cout << "you created a new map!" << endl;
+				cout << "You created a new map!" << endl;
 				LoadAllMapToFile(maps);
 				Sleep(1000);
 				break;
