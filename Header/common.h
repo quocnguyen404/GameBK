@@ -7,22 +7,24 @@
 #include <conio.h>
 #include <string>
 #include <map>
+#include <vector>
 
 using namespace std;
 
 /*-----------[CONSTANTS]-----------*/
-const int MAXMAPNUMBER = 25;
 const int MAP_WIDTH_OVERVIEW = 5;
 const int MAP_LENGTH_OVERVIEW = 5;
+const int MAX_MAP_NUMBER = MAP_WIDTH_OVERVIEW * MAP_LENGTH_OVERVIEW;
 const int MAP_WIDTH = 11;
 const int MAP_LENGTH = 11;
+const int MAX_MAP_AROUND_NUMBER = 4;
 const string mapPath = "map.txt";
 const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
 const string mapFilePath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\map\\";
 const string objSubfix = ".obj";
 
 
-/*-----------[LOCAL VARIABLE]-----------*/
+/*-----------[GOLBAL VARIABLE]-----------*/
 int MAPOVERVIEW[MAP_WIDTH_OVERVIEW][MAP_LENGTH_OVERVIEW] = 
 {
 	{ {0}, {0}, {0}, {0}, {0} },
@@ -51,7 +53,7 @@ enum MapAround
 };
 
 
-/*----------------[ENUM DEFINE]----------------*/
+/*----------------[MAP IN C++]----------------*/
 map<ModulType, string> ModulTypeConvert
 {
 	{NONE, "NONE"},
@@ -60,7 +62,6 @@ map<ModulType, string> ModulTypeConvert
 	{ CAR, "CAR" },
 	{ GOTO, "GOTO" },
 };
-
 
 
 /*----------------[STRUCTURE]----------------*/
@@ -115,7 +116,7 @@ Vector3::Vector3(int x, int y, int z)
 class Map
 {
 public:
-	int mapIndex;
+	int index;
 	int MAP[MAP_WIDTH][MAP_LENGTH] = {};
 	int numberOfModul;
 	int numberOfGoto;
@@ -135,7 +136,7 @@ public:
 public:
 	Map();
 
-	Map(int mapIndex, Vector2 mapPosition);
+	Map(int index, Vector2 mapPosition);
 
 public: 
 	void GenerateFile();
@@ -143,25 +144,25 @@ public:
 
 Map::Map()
 {
-	Map::mapIndex = 0;
+	Map::index = 0;
 	Map::numberOfModul = 0;
 	Map::numberOfGoto = 0;
 	Map::position.x = 0;
 	Map::position.y = 0;
-	Map::name = "MAP" + to_string(Map::mapIndex);
+	Map::name = "MAP" + to_string(Map::index);
 	Map::path = mapFilePath + Map::name + ".txt";
 }
 
-Map::Map(int mapIndex, Vector2 mapPosition)
+Map::Map(int index, Vector2 mapPosition)
 {
-	Map::mapIndex = mapIndex;
+	Map::index = index;
 	Map::position = mapPosition;
 	Map::numberOfModul = rand() % 7 + 4;
 	Map::numberOfGoto = 0;
 	Map::moduls[TREE] = rand() % (numberOfModul + 1);
 	Map::moduls[HOUSE] = rand() % (numberOfModul - Map::moduls[TREE] + 1);
 	Map::moduls[CAR] = numberOfModul - Map::moduls[CAR] - Map::moduls[HOUSE];
-	Map::name = "MAP" + to_string(Map::mapIndex);
+	Map::name = "MAP" + to_string(Map::index);
 	Map::path = mapFilePath + Map::name + ".txt";
 	GenerateFile();
 }
@@ -172,11 +173,9 @@ void Map::GenerateFile()
 	mapFile.open(path, ios::out);
 
 	if (!mapFile.is_open())
-	{
 		cout << "Open generate obj unsuccess" << endl;
-	}
 
-	mapFile << "MAP" + to_string(Map::mapIndex) << endl;
+	mapFile << "MAP" + to_string(Map::index) << endl;
 	mapFile.close();
 }
 
@@ -210,7 +209,7 @@ Modul::Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotat
 	Modul::scale = scale;
 	Modul::rotation = rotation;
 	Modul::path = modulPath + Modul::name + objSubfix;
-	Modul::byte = sizeof(byte) + sizeof(this) + sizeof(modulType) + sizeof(name) + sizeof(position) + sizeof(rotation) + sizeof(path);
+	Modul::byte = sizeof(this);
 	Modul::GenerateFile();
 }
 
@@ -220,10 +219,7 @@ void Modul::GenerateFile()
 	modulFile.open(path, ios::out);
 
 	if (!modulFile.is_open())
-	{
 		cout << "Open generate obj unsuccess" << endl;
-		return;
-	}
 
 	modulFile << name << endl;
 	modulFile << byte << endl;
@@ -241,7 +237,7 @@ void Modul::GenerateFile()
 
 
 /*----------------[PROTOTYPE]----------------*/
-Map CreateMap(int, Vector2, Map(&)[MAXMAPNUMBER]); //creat a map
+Map CreateMap(int, Vector2, Map(&)[MAX_MAP_NUMBER]); //creat a map
 void CreateModul(ModulType, Map&, int);
 Modul InitiateModul(ModulType, Map&); //input the information about object
 int CountMap(); // count map exist in file map.txt
@@ -250,18 +246,22 @@ Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet
 int RandomInRange(int, int); //random int number in range
 Vector3 RandomVector3(int, int);  //random vector3 on ground
 Vector2 RandomVector2(int, int); // random vector2
-void PrintMapOverview(); //print 2x2 matrix overview of maps
+void PrintMapOverview(); //print 2d matrix overview of maps
 void LoadMapAround(Map&); //load map around of a map
-void LoadAllMapToFile(Map(&)[MAXMAPNUMBER]);
+int Up(Map&); //the map above;
+int Down(Map&); //the map below
+int Right(Map&); //the map right
+int Left(Map&); //the map left
+void LoadAllMapToFile(Map(&)[MAX_MAP_NUMBER]); //load all map file to map.txt file
 
 
 
 /*----------------[FUNCTION]----------------*/
-Map CreateMap(int mapIndex, Vector2 position, Map (&maps)[MAXMAPNUMBER])
+Map CreateMap(int index, Vector2 position, Map (&maps)[MAX_MAP_NUMBER])
 {
-	Map map(mapIndex, position);
+	Map map(index, position);
 
-	MAPOVERVIEW[map.position.x][map.position.y] = mapIndex;
+	MAPOVERVIEW[map.position.x][map.position.y] = index;
 	
 
 	CreateModul(TREE, map, map.moduls[TREE]);
@@ -273,7 +273,7 @@ Map CreateMap(int mapIndex, Vector2 position, Map (&maps)[MAXMAPNUMBER])
 
 	//Load map near by this map (is creating)
 	int mapAroundIndex = 0;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < MAX_MAP_AROUND_NUMBER; i++)
 	{
 		mapAroundIndex = map.mapAround[i];
 		if (mapAroundIndex != 0)
@@ -392,9 +392,8 @@ void PrintMapOverview()
 	for (int i = 0; i < MAP_WIDTH_OVERVIEW; i++)
 	{
 		for (int j = 0; j < MAP_LENGTH_OVERVIEW; j++)
-		{
 			cout << MAPOVERVIEW[i][j] << " ";
-		}
+
 		cout << endl;
 	}
 }
@@ -402,12 +401,12 @@ void PrintMapOverview()
 void LoadMapAround(Map &map)
 {
 	int currentMapAround = 0;
-	map.mapAround[UP] = MAPOVERVIEW[map.position.x-1][map.position.y]; //up
-	map.mapAround[DOWN] = MAPOVERVIEW[map.position.x+1][map.position.y]; //down
-	map.mapAround[RIGHT] = MAPOVERVIEW[map.position.x][map.position.y+1]; //right
-	map.mapAround[LEFT] = MAPOVERVIEW[map.position.x][map.position.y-1]; //left
+	map.mapAround[UP] = Up(map);
+	map.mapAround[DOWN] = Down(map);
+	map.mapAround[RIGHT] = Right(map);
+	map.mapAround[LEFT] = Left(map);
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < MAX_MAP_AROUND_NUMBER; i++)
 	{
 		if (map.mapAround[i] != 0)
 			currentMapAround++;
@@ -424,13 +423,73 @@ void LoadMapAround(Map &map)
 	CreateModul(GOTO, map, gotoLoadYet);
 }
 
-void LoadAllMapToFile(Map(&maps)[MAXMAPNUMBER])
+int Up(Map &map)
+{
+	if (map.position.x <= 0)
+		return 0;
+	
+	return MAPOVERVIEW[map.position.x - 1][map.position.y]; //up
+}
+
+int Down(Map& map)
+{
+	if (map.position.x >= MAP_WIDTH_OVERVIEW-1)
+		return 0;
+
+	return MAPOVERVIEW[map.position.x + 1][map.position.y]; //down
+}
+
+int Right(Map& map)
+{
+	if (map.position.y >= MAP_WIDTH_OVERVIEW - 1)
+		return 0;
+
+	return MAPOVERVIEW[map.position.x][map.position.y + 1]; //right
+}
+
+int Left(Map& map)
+{
+	if (map.position.y <= 0)
+		return 0;
+
+	return MAPOVERVIEW[map.position.x][map.position.y - 1]; //left
+}
+
+int FindPath(int mapIndex, vector<int> &path, vector<int> visited, Map (&maps)[MAX_MAP_NUMBER], int endMapIndex)
+{
+	Map map = maps[mapIndex];
+	int mapAroundIndex = 0;
+	for (int i = 0; i < MAX_MAP_AROUND_NUMBER; i++)
+	{
+		mapAroundIndex = map.mapAround[i];
+
+		if (mapAroundIndex == endMapIndex)
+			return 1;
+
+		if (mapAroundIndex != 0 && !(find(visited.begin(), visited.end(), mapAroundIndex) != visited.end()))
+		{
+			path.push_back(mapAroundIndex);
+			break;
+		}
+		else if (i >= MAX_MAP_AROUND_NUMBER)
+		{
+			visited.push_back(mapAroundIndex);
+			FindPath(*path.end(), path, visited, maps, endMapIndex);
+		}
+	}
+
+	FindPath(mapAroundIndex, path, visited, maps, endMapIndex);
+
+	return 0;
+}
+
+void LoadAllMapToFile(Map(&maps)[MAX_MAP_NUMBER])
 {
 	ofstream allMap(mapPath, ios::trunc);
 
-	for (int i = 0; i < MAXMAPNUMBER; i++)
+	for (int i = 0; i < MAX_MAP_NUMBER; i++)
 	{
-		if (maps[i].mapIndex != 0)
+		if (maps[i].index != 0)
 		{
 			ifstream currentMap(maps[i].path);
 

@@ -7,15 +7,21 @@ int main()
 	srand((unsigned int)time(0));
 
 	/*-----------[INITIATE DEFAULT MAP]-----------*/
-	Map maps[MAXMAPNUMBER] = {};
+	Map maps[MAX_MAP_NUMBER] = {};
 
 	Vector2 mapPos1(1, 1);
 	Vector2 mapPos2(1, 2);
 	Vector2 mapPos3(1, 3);
+	Vector2 mapPos4(1, 4);
+	Vector2 mapPos5(2, 4);
+	Vector2 mapPos6(3, 4);
 
 	maps[1] = CreateMap(1, mapPos1, maps);
 	maps[2] = CreateMap(2, mapPos2, maps);
 	maps[3] = CreateMap(3, mapPos3, maps);
+	maps[4] = CreateMap(4, mapPos4, maps);
+	maps[5] = CreateMap(5, mapPos5, maps);
+	maps[6] = CreateMap(6, mapPos6, maps);
 	LoadAllMapToFile(maps);
 
 
@@ -28,15 +34,19 @@ int main()
 		cout << "MENU:" << endl;
 		cout << "1. Create a new map" << endl;
 		cout << "2. Play" << endl;
-		cout << "3. Exit" << endl;
+		cout << "3. Find path" << endl;
+		cout << "4. Edit map" << endl;
+		cout << "5. Checking" << endl;
+		cout << "6. Exit" << endl;
 		cout << "Enter your option: ";
 		cin >> option;
 
 		switch (option)
 		{
+			//create new map
 			case 1:
 			{
-				if (CountMap() >= MAXMAPNUMBER)
+				if (CountMap() >= MAX_MAP_NUMBER)
 				{
 					cout << "Full map!!";
 					break;
@@ -53,7 +63,10 @@ int main()
 					if (MAPOVERVIEW[position.x][position.y] == 0)
 						isExistMap = false;
 					else
+					{
 						cout << "Exist map at position " << position.x << " " << position.y << endl;
+						PrintMapOverview();
+					}
 				}
 
 				maps[CountMap()+1] = CreateMap(CountMap() + 1, position, maps);
@@ -62,23 +75,18 @@ int main()
 				Sleep(1000);
 				break;
 			}
-				
+			
+			//Play mode: move play
 			case 2:
 			{
 				system("cls");
-				int modulType;
-				int preMapIndex;
-				int mapIndex;//the map that character in
-				modulType = 0;
-				int mapAroundIndex = 0;
-				mapIndex = 0;
-				preMapIndex = 0;
-
-				//show map
+				int modulType = 0;
+				int preMapIndex = 0;
+				int mapIndex = 0;
 				bool isPlaying = true;
+
 				cout << "Press m to move" << endl;
 				cout << "Press e to exit to menu" << endl;
-				cout << "Press a to add modul in map" << endl;
 
 				while (isPlaying)
 				{
@@ -88,15 +96,25 @@ int main()
 						char c = _getch();
 						if (c == 'm') 
 						{
-							cout << "Enter the map that you want to go to: ";
-							cin >> mapIndex;
+							//Set first map to map 1
+							if (mapIndex != 0)
+							{
+								cout << "Enter the map that you want to go to: ";
+								cin >> mapIndex;
+							}
+							else
+								mapIndex = 1;
 
 							bool enterMapCanGo = false;
 
+							//checking map can go
 							for (int i = 0; i < 4; i++)
 							{
 								if (preMapIndex == 0)
 									break;
+
+								if (preMapIndex == mapIndex)
+									enterMapCanGo = true;
 
 								if (preMapIndex != 0 && maps[preMapIndex].mapAround[i] == mapIndex)
 									enterMapCanGo = true;
@@ -129,15 +147,10 @@ int main()
 							cout << endl;
 
 							PrintMapOverview();
-
-							
 						}
-						else if (c == 'a')
+						else if ( c == 'a')
 						{
-							cout << "Enter map index to add modul" << endl;
-							cin >> mapIndex;
-							cout << "Enter modul type 1:Tree, 2:House, 3:Car" << endl;
-							cin >> modulType;
+
 						}
 						else if (c == 'e') 
 							isPlaying = false;
@@ -147,6 +160,37 @@ int main()
 			}
 
 			case 3:
+			{
+				int startMapIndex = 0;
+				int endMapIndex = 0;
+				bool foundPath = false;
+
+				vector<int> path;
+				vector<int> visited;
+
+				PrintMapOverview();
+				cout << "Enter map index you want to start: "; cin >> startMapIndex;
+				cout << "Enter map index you want to come: "; cin >> endMapIndex;
+
+				FindPath(startMapIndex, path, visited, maps, endMapIndex);
+
+				for (int i = 0; i < path.size(); i++)
+					cout << path[i] << " ";
+
+				break;
+			}
+
+			case 4:
+			{
+
+			}
+
+			case 5:
+			{
+
+			}
+
+			case 6:
 			{
 				system("cls");
 				cout << "goodbye!";
@@ -158,7 +202,6 @@ int main()
 				cout << "Doesn't exist that option" << endl;
 				break;
 			}
-				
 		}
 	}
 	return 0;
