@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <list>
 
 using namespace std;
 
@@ -184,6 +185,7 @@ void Map::GenerateFile()
 class Modul
 {
 public:
+	int id;
 	ModulType modulType;
 	int byte;
 	string name;
@@ -193,7 +195,7 @@ public:
 	Vector3 rotation;
 
 public:
-	Modul() {}
+	Modul();
 
 	Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotation);
 
@@ -201,10 +203,18 @@ public:
 	void GenerateFile();
 };
 
+Modul::Modul()
+{
+	static int uniqueId = 0;
+	Modul::id = uniqueId++;
+}
+
 Modul::Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotation)
 {
+	static int uniqueId = 0;
+	Modul::id = uniqueId++;
 	Modul::modulType = modulType;
-	Modul::name = ModulTypeConvert[modulType] + to_string(modulType);
+	Modul::name = ModulTypeConvert[modulType] + to_string(Modul::id);
 	Modul::position = position;
 	Modul::scale = scale;
 	Modul::rotation = rotation;
@@ -237,23 +247,25 @@ void Modul::GenerateFile()
 
 
 /*----------------[PROTOTYPE]----------------*/
-Map CreateMap(int, Vector2, Map(&)[MAX_MAP_NUMBER]); //creat a map
-void CreateModul(ModulType, Map&, int);
-Modul InitiateModul(ModulType, Map&); //input the information about object
-int CountMap(); // count map exist in file map.txt
-void ReadMap(Map&); // read map
-Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet
+Map CreateMap(int, Vector2, Map(&)[MAX_MAP_NUMBER]); //creat a map 1
+void CreateModul(ModulType, Map&, int);		// 2
+Modul InitiateModul(ModulType, Map&); //input the information about object 3
+int CountMap(); // count map exist in file map.txt 4
+void ReadMap(Map&); // read map 5
+Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet 6
 int RandomInRange(int, int); //random int number in range
 Vector3 RandomVector3(int, int);  //random vector3 on ground
 Vector2 RandomVector2(int, int); // random vector2
 void PrintMapOverview(); //print 2d matrix overview of maps
-void LoadMapAround(Map&); //load map around of a map
+void LoadMapAround(Map&); //load map around of a map 7
 int Up(Map&); //the map above;
 int Down(Map&); //the map below
 int Right(Map&); //the map right
 int Left(Map&); //the map left
-void LoadAllMapToFile(Map(&)[MAX_MAP_NUMBER]); //load all map file to map.txt file
-
+void FindPath(int, int, vector<vector<int>>&); //find path from start to end
+void Recursion(int, int, vector<bool>&, vector<int>&, vector<vector<int>>&); //
+void PrintPath(vector<int>&);
+void LoadAllMapToFile(Map(&)[MAX_MAP_NUMBER]); //load all map file to map.txt file 8
 
 
 /*----------------[FUNCTION]----------------*/
@@ -280,7 +292,7 @@ Map CreateMap(int index, Vector2 position, Map (&maps)[MAX_MAP_NUMBER])
 			LoadMapAround(maps[mapAroundIndex]);
 	}
 	return map;
-}
+} //Khanh
 
 void CreateModul(ModulType modulType, Map& map, int numberOfModulToCreate)
 {
@@ -299,7 +311,7 @@ void CreateModul(ModulType modulType, Map& map, int numberOfModulToCreate)
 	}
 
 	mapFile.close();
-}
+} //Nhat
 
 Modul InitiateModul(ModulType modulType, Map &map)
 {
@@ -311,7 +323,7 @@ Modul InitiateModul(ModulType modulType, Map &map)
 	Modul modul(modulType, modPos, modScale, modRotate);
 	//modul.AddToMap(mapPath);
 	return modul;
-}
+} //Nhat
 
 int CountMap()
 {
@@ -335,7 +347,7 @@ int CountMap()
 
 	input.close();
 	return mapCountVar;
-}
+} //Phong
 
 void ReadMap(Map &map)
 {
@@ -353,7 +365,7 @@ void ReadMap(Map &map)
 	inputFile.close();
 
 	cout << content;
-}
+} //Phong
 
 Vector3 CheckSpawn(Vector3 checkVec, Map map)
 {
@@ -363,7 +375,7 @@ Vector3 CheckSpawn(Vector3 checkVec, Map map)
 		checkVec = RandomVector3(0, MAP_LENGTH);
 	}
 	return checkVec;
-}
+} //Phong
 
 int RandomInRange(int min, int max)
 {
@@ -398,7 +410,7 @@ void PrintMapOverview()
 	}
 }
 
-void LoadMapAround(Map &map)
+void LoadMapAround(Map& map)
 {
 	int currentMapAround = 0;
 	map.mapAround[UP] = Up(map);
@@ -421,19 +433,19 @@ void LoadMapAround(Map &map)
 		return;
 
 	CreateModul(GOTO, map, gotoLoadYet);
-}
+} //Ba
 
-int Up(Map &map)
+int Up(Map& map)
 {
 	if (map.position.x <= 0)
 		return 0;
-	
+
 	return MAPOVERVIEW[map.position.x - 1][map.position.y]; //up
 }
 
 int Down(Map& map)
 {
-	if (map.position.x >= MAP_WIDTH_OVERVIEW-1)
+	if (map.position.x >= MAP_WIDTH_OVERVIEW - 1)
 		return 0;
 
 	return MAPOVERVIEW[map.position.x + 1][map.position.y]; //down
@@ -455,32 +467,40 @@ int Left(Map& map)
 	return MAPOVERVIEW[map.position.x][map.position.y - 1]; //left
 }
 
-int FindPath(int mapIndex, vector<int> &path, vector<int> visited, Map (&maps)[MAX_MAP_NUMBER], int endMapIndex)
-{
-	Map map = maps[mapIndex];
-	int mapAroundIndex = 0;
-	for (int i = 0; i < MAX_MAP_AROUND_NUMBER; i++)
+void FindPath(int start, int end, vector<vector<int>> &graph) {
+	int size = graph.size();
+	std::vector<bool> visited(size+1, false);
+	std::vector<int> path;
+	Recursion(start, end, visited, path, graph);
+}
+
+void Recursion(int start, int end, vector<bool>& visited, vector<int> &path, vector<vector<int>> &graph) {
+	visited[start] = true;
+	path.push_back(start);
+
+	if (start == end) 
+		PrintPath(path);
+	else 
 	{
-		mapAroundIndex = map.mapAround[i];
-
-		if (mapAroundIndex == endMapIndex)
-			return 1;
-
-		if (mapAroundIndex != 0 && !(find(visited.begin(), visited.end(), mapAroundIndex) != visited.end()))
+		for (int i = 0; i < graph[start].size(); i++) 
 		{
-			path.push_back(mapAroundIndex);
-			break;
-		}
-		else if (i >= MAX_MAP_AROUND_NUMBER)
-		{
-			visited.push_back(mapAroundIndex);
-			FindPath(*path.end(), path, visited, maps, endMapIndex);
+			int next = graph[start][i];
+			if (!visited[next]) 
+				Recursion(next, end, visited, path, graph);
 		}
 	}
 
-	FindPath(mapAroundIndex, path, visited, maps, endMapIndex);
+	// Backtrack: remove the current node from the path and mark it as unvisited
+	path.pop_back();
+	visited[start] = false;
+}
 
-	return 0;
+void PrintPath(std::vector<int>& path) {
+	for (int i = 0; i < path.size(); i++) {
+		std::cout << path[i];
+		if (i != path.size() - 1) std::cout << "->";
+	}
+	std::cout << std::endl;
 }
 
 void LoadAllMapToFile(Map(&maps)[MAX_MAP_NUMBER])
@@ -502,4 +522,4 @@ void LoadAllMapToFile(Map(&maps)[MAX_MAP_NUMBER])
 
 	allMap.close();
 
-}
+} //Ba

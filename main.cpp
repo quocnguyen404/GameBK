@@ -15,6 +15,11 @@ int main()
 	Vector2 mapPos4(1, 4);
 	Vector2 mapPos5(2, 4);
 	Vector2 mapPos6(3, 4);
+	Vector2 mapPos7(2, 1);
+	Vector2 mapPos8(2, 2);
+	Vector2 mapPos9(2, 3);
+	Vector2 mapPos10(3, 1);
+	Vector2 mapPos11(3, 2);
 
 	maps[1] = CreateMap(1, mapPos1, maps);
 	maps[2] = CreateMap(2, mapPos2, maps);
@@ -22,6 +27,13 @@ int main()
 	maps[4] = CreateMap(4, mapPos4, maps);
 	maps[5] = CreateMap(5, mapPos5, maps);
 	maps[6] = CreateMap(6, mapPos6, maps);
+
+	maps[7] = CreateMap(7, mapPos7, maps);
+	maps[8] = CreateMap(8, mapPos8, maps);
+	maps[9] = CreateMap(9, mapPos9, maps);
+	maps[10] = CreateMap(10, mapPos10, maps);
+	maps[11] = CreateMap(11, mapPos11, maps);
+
 	LoadAllMapToFile(maps);
 
 
@@ -165,17 +177,28 @@ int main()
 				int endMapIndex = 0;
 				bool foundPath = false;
 
-				vector<int> path;
-				vector<int> visited;
-
 				PrintMapOverview();
 				cout << "Enter map index you want to start: "; cin >> startMapIndex;
 				cout << "Enter map index you want to come: "; cin >> endMapIndex;
 
-				FindPath(startMapIndex, path, visited, maps, endMapIndex);
+				vector<vector<int>> graph;
+				int pathIndex = 0;
 
-				for (int i = 0; i < path.size(); i++)
-					cout << path[i] << " ";
+				graph.push_back({});
+				for (int i = 1; i < CountMap(); i++)
+				{
+					graph.push_back({});
+					for (int j = 0; j < MAX_MAP_AROUND_NUMBER; j++)
+					{
+						int mapAround = maps[i].mapAround[j];
+						if (mapAround != 0)
+						{
+							graph[i].push_back(mapAround);
+						}
+					}
+				}
+
+				FindPath(startMapIndex, endMapIndex, graph);
 
 				break;
 			}
