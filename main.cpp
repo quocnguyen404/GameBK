@@ -40,7 +40,7 @@ int main()
 	/*-----------[MENU]-----------*/
 
 	int option = 0;
-	while (option != 3)
+	while (option != 6)
 	{
 		system("cls");
 		cout << "MENU:" << endl;
@@ -180,7 +180,7 @@ int main()
 
 				//initiate graph[0] vector which empty
 				graph.push_back({});
-				for (int i = 1; i < CountMap(); i++)
+				for (int i = 1; i <= CountMap(); i++)
 				{
 					//initiate graph[i] vector
 					graph.push_back({});
@@ -193,7 +193,7 @@ int main()
 				}
 
 				FindPath(startMapIndex, endMapIndex, graph);
-
+				system("pause");
 				break;
 			}
 
@@ -205,6 +205,7 @@ int main()
 
 				EditMap(maps[editMapIndex]);
 				LoadAllMapToFile(maps);
+				break;
 			}
 
 			case 5:

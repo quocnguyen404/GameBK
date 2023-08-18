@@ -205,8 +205,6 @@ public:
 
 Modul::Modul()
 {
-	static int uniqueId = 0;
-	Modul::id = uniqueId++;
 }
 
 Modul::Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotation)
@@ -219,28 +217,21 @@ Modul::Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotat
 	Modul::scale = scale;
 	Modul::rotation = rotation;
 	Modul::path = modulPath + Modul::name + objSubfix;
-	Modul::byte = sizeof(this);
+	Modul::byte = sizeof(id) + sizeof(Modul::modulType) + sizeof(Modul::name) + sizeof(Modul::scale) + sizeof(Modul::rotation) + sizeof(Modul::path);
 	Modul::GenerateFile();
 }
 
 void Modul::GenerateFile()
 {
 	ofstream modulFile;
-	modulFile.open(path, ios::out);
+	modulFile.open(path, ios::trunc | ios::binary);
 
 	if (!modulFile.is_open())
 		cout << "Open obj file unsuccess!" << endl;
 
-	modulFile << name << endl;
+	modulFile << name << " " << &name << endl;
 	modulFile << byte << endl;
-
-	for (int i = 0; i < name.length(); i++)
-		modulFile << int(name[i]);
-
-	modulFile << position.x << position.y << position.z;
-	modulFile << scale.x << scale.y << scale.z;
-	modulFile << rotation.x << rotation.y << rotation.z;
-	modulFile << endl;
+	modulFile << &id << &position << &scale << &rotation << &path;
 
 	modulFile.close();
 }
@@ -263,7 +254,7 @@ int Down(Map&); //the map below
 int Right(Map&); //the map right
 int Left(Map&); //the map left
 void FindPath(int, int, vector<vector<int>>&); //find path from start to end
-void Recursion(int, int, vector<bool>&, vector<int>&, vector<vector<int>>&); //
+void FindPathRecursion(int, int, vector<bool>&, vector<int>&, vector<vector<int>>&); //
 void PrintPath(vector<int>&);
 void LoadAllMapToFile(Map(&)[MAX_MAP_NUMBER]); //load all map file to map.txt file 8
 
@@ -404,7 +395,12 @@ void PrintMapOverview()
 	for (int i = 0; i < MAP_WIDTH_OVERVIEW; i++)
 	{
 		for (int j = 0; j < MAP_LENGTH_OVERVIEW; j++)
-			cout << MAPOVERVIEW[i][j] << " ";
+		{
+			if (MAPOVERVIEW[i][j] < 10)
+				cout << 0 << MAPOVERVIEW[i][j] << " ";
+			else
+				cout << MAPOVERVIEW[i][j] << " ";
+		}
 
 		cout << endl;
 	}
@@ -471,10 +467,10 @@ void FindPath(int start, int end, vector<vector<int>> &graph) {
 	int size = graph.size();
 	std::vector<bool> visited(size+1, false);
 	std::vector<int> path;
-	Recursion(start, end, visited, path, graph);
+	FindPathRecursion(start, end, visited, path, graph);
 }
 
-void Recursion(int start, int end, vector<bool>& visited, vector<int> &path, vector<vector<int>> &graph) {
+void FindPathRecursion(int start, int end, vector<bool>& visited, vector<int> &path, vector<vector<int>> &graph) {
 	visited[start] = true;
 	path.push_back(start);
 
@@ -486,7 +482,7 @@ void Recursion(int start, int end, vector<bool>& visited, vector<int> &path, vec
 		{
 			int next = graph[start][i];
 			if (!visited[next]) 
-				Recursion(next, end, visited, path, graph);
+				FindPathRecursion(next, end, visited, path, graph);
 		}
 	}
 
@@ -495,12 +491,15 @@ void Recursion(int start, int end, vector<bool>& visited, vector<int> &path, vec
 	visited[start] = false;
 }
 
-void PrintPath(std::vector<int>& path) {
-	for (int i = 0; i < path.size(); i++) {
-		std::cout << path[i];
-		if (i != path.size() - 1) std::cout << "->";
+void PrintPath(vector<int>& path) 
+{
+	for (int i = 0; i < path.size(); i++) 
+	{
+		cout << path[i];
+		if (i != path.size() - 1) 
+			cout << "->";
 	}
-	std::cout << std::endl;
+	cout << endl;
 }
 
 void LoadAllMapToFile(Map(&maps)[MAX_MAP_NUMBER])
@@ -563,29 +562,41 @@ void EditMap(Map &map)
 			{
 				string editModulName = "";
 				Vector3 customsPos;
+				system("cls");
 				ReadMap(map);
-				cout << "Enter modul name you want to change position.";
+				cout << "Enter modul name you want to change position: ";
 				cin.ignore();
 				getline(cin, editModulName);
-				cout << "Enter modul position(x, y, z): "; 
+				cout << "Enter modul position(x, y, z): ";
 				cin >> customsPos.x >> customsPos.y >> customsPos.z;
-
+				
+				string change = to_string(customsPos.x) + "," + to_string(customsPos.y) + "," + to_string(customsPos.z);
 				string line = "";
 				bool ableToEdit = false;
 
-				fstream mapFile(map.path);
+				fstream mapFile;
+				mapFile.open(map.path, ios::in | ios::out);
+
+				if (!mapFile.is_open())
+					cout << "Open file fail." << endl;
+
 				while (getline(mapFile, line))
 				{
 					if (ableToEdit)
-						mapFile << customsPos.x << ", " << customsPos.y << ", " << customsPos.z;
+					{
+						mapFile << change;
+						ableToEdit = false;
+					}
 
-					if (line.find(editModulName) != string::npos)
+					if (line == editModulName)
 						ableToEdit = true;
+					else
+						ableToEdit = false;
 				}
 
 				if (!ableToEdit)
 					cout << "Doesn't exist " << editModulName << endl;
-
+				mapFile.close();
 				break;
 			}
 
