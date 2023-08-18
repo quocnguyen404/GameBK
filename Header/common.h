@@ -544,10 +544,11 @@ void EditMap(Map &map)
 				cout << "Choose the modul you want to add: ";
 				cin >> input;
 
+				ModulType modulType = (ModulType)input;
+
 				cout << "How many " << ModulTypeConvert[modulType] << " you want to add: ";
 				cin >> quantity;
 
-				ModulType modulType = (ModulType)input;
 				CreateModul(modulType, map, quantity);
 				system("cls");
 				cout << "Add new modul success!" << endl;
