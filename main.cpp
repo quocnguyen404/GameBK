@@ -58,27 +58,25 @@ int main()
 			//create new map
 			case 1:
 			{
+				system("cls");
 				if (CountMap() >= MAX_MAP_NUMBER)
 				{
 					cout << "Full map!!";
 					break;
 				}
-				system("cls");
 				Vector2 position;
 				bool isExistMap = true;
 
 				while (isExistMap)
 				{
+					PrintMapOverview();
 					cout << "Enter map position x,y: ";
 					cin >> position.x >> position.y;
 
 					if (MAPOVERVIEW[position.x][position.y] == 0)
 						isExistMap = false;
 					else
-					{
 						cout << "Exist map at position " << position.x << " " << position.y << endl;
-						PrintMapOverview();
-					}
 				}
 
 				maps[CountMap()+1] = CreateMap(CountMap() + 1, position, maps);
@@ -160,10 +158,6 @@ int main()
 
 							PrintMapOverview();
 						}
-						else if ( c == 'a')
-						{
-
-						}
 						else if (c == 'e') 
 							isPlaying = false;
 					}
@@ -181,20 +175,20 @@ int main()
 				cout << "Enter map index you want to start: "; cin >> startMapIndex;
 				cout << "Enter map index you want to come: "; cin >> endMapIndex;
 
-				vector<vector<int>> graph;
+				vector<vector<int>> graph; //dynamic 2d array
 				int pathIndex = 0;
 
+				//initiate graph[0] vector which empty
 				graph.push_back({});
 				for (int i = 1; i < CountMap(); i++)
 				{
+					//initiate graph[i] vector
 					graph.push_back({});
 					for (int j = 0; j < MAX_MAP_AROUND_NUMBER; j++)
 					{
 						int mapAround = maps[i].mapAround[j];
 						if (mapAround != 0)
-						{
 							graph[i].push_back(mapAround);
-						}
 					}
 				}
 
@@ -205,7 +199,12 @@ int main()
 
 			case 4:
 			{
+				int editMapIndex = 0;
+				cout << "Enter map index you want to edit: ";
+				cin >> editMapIndex;
 
+				EditMap(maps[editMapIndex]);
+				LoadAllMapToFile(maps);
 			}
 
 			case 5:

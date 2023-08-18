@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <stdio.h>
 #include <windows.h>
 #include <fstream>
@@ -229,7 +229,7 @@ void Modul::GenerateFile()
 	modulFile.open(path, ios::out);
 
 	if (!modulFile.is_open())
-		cout << "Open generate obj unsuccess" << endl;
+		cout << "Open obj file unsuccess!" << endl;
 
 	modulFile << name << endl;
 	modulFile << byte << endl;
@@ -302,7 +302,7 @@ void CreateModul(ModulType modulType, Map& map, int numberOfModulToCreate)
 	for (int i = 0; i < numberOfModulToCreate; i++)
 	{
 		Modul modul = InitiateModul(modulType, map);
-		mapFile << "OBJ" << modulType << endl;
+		mapFile << "OBJ" << modul.id << endl;
 		mapFile << modul.name << endl;
 		mapFile << modul.position.x << "," << modul.position.y << "," << modul.position.z << endl;
 		mapFile << modul.scale.x << "," << modul.scale.y << "," << modul.scale.z << endl;
@@ -523,3 +523,77 @@ void LoadAllMapToFile(Map(&maps)[MAX_MAP_NUMBER])
 	allMap.close();
 
 } //Ba
+
+void EditMap(Map &map)
+{
+	int choice = 0;
+
+	do
+	{
+		cout << "1. Add modul." << endl;
+		cout << "2. Change modul position." << endl;
+		cout << "3. Exit." << endl;
+		cout << "Enter your choice: ";
+		cin >> choice;
+
+		switch (choice)
+		{
+			case 1:
+			{
+				int input = 0;
+				int quantity = 0;
+				cout << "1. Tree" << endl;
+				cout << "2. House" << endl;
+				cout << "3. Car" << endl;
+				cout << "Choose the modul you want to add";
+				cin >> input;
+
+				ModulType modulType = (ModulType)input;
+
+				cout << "How many " << ModulTypeConvert[modulType] << " you want to add: ";
+				cin >> quantity;
+
+				CreateModul(modulType, map, quantity);
+				system("cls");
+				cout << "Add new modul success!" << endl;
+				break;
+			}
+
+			case 2:
+			{
+				string editModulName = "";
+				Vector3 customsPos;
+				ReadMap(map);
+				cout << "Enter modul name you want to change position.";
+				cin.ignore();
+				getline(cin, editModulName);
+				cout << "Enter modul position(x, y, z): "; 
+				cin >> customsPos.x >> customsPos.y >> customsPos.z;
+
+				string line = "";
+				bool ableToEdit = false;
+
+				fstream mapFile(map.path);
+				while (getline(mapFile, line))
+				{
+					if (ableToEdit)
+						mapFile << customsPos.x << ", " << customsPos.y << ", " << customsPos.z;
+
+					if (line.find(editModulName) != string::npos)
+						ableToEdit = true;
+				}
+
+				if (!ableToEdit)
+					cout << "Doesn't exist " << editModulName << endl;
+
+				break;
+			}
+
+			default:
+				system("cls");
+				cout << "Doesn't exist function.";
+				choice = 3;
+				break;
+		}
+	} while (choice != 3);
+}
