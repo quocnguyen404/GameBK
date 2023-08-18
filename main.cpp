@@ -1,10 +1,11 @@
 #include "Header/common.h"
 
-using namespace std;
-
 int main() 
 {
 	srand((unsigned int)time(0));
+
+	/*-----------[REMOVE ALL .OBJ IN MODUL FOLDER]-----------*/
+
 
 	/*-----------[INITIATE DEFAULT MAP]-----------*/
 	Map maps[MAX_MAP_NUMBER] = {};
@@ -15,11 +16,11 @@ int main()
 	Vector2 mapPos4(1, 4);
 	Vector2 mapPos5(2, 4);
 	Vector2 mapPos6(3, 4);
-	Vector2 mapPos7(2, 1);
+  /*Vector2 mapPos7(2, 1);
 	Vector2 mapPos8(2, 2);
 	Vector2 mapPos9(2, 3);
 	Vector2 mapPos10(3, 1);
-	Vector2 mapPos11(3, 2);
+	Vector2 mapPos11(3, 2);*/
 
 	maps[1] = CreateMap(1, mapPos1, maps);
 	maps[2] = CreateMap(2, mapPos2, maps);
@@ -28,11 +29,11 @@ int main()
 	maps[5] = CreateMap(5, mapPos5, maps);
 	maps[6] = CreateMap(6, mapPos6, maps);
 
-	maps[7] = CreateMap(7, mapPos7, maps);
-	maps[8] = CreateMap(8, mapPos8, maps);
-	maps[9] = CreateMap(9, mapPos9, maps);
-	maps[10] = CreateMap(10, mapPos10, maps);
-	maps[11] = CreateMap(11, mapPos11, maps);
+	//maps[7] = CreateMap(7, mapPos7, maps);
+	//maps[8] = CreateMap(8, mapPos8, maps);
+	//maps[9] = CreateMap(9, mapPos9, maps);
+	//maps[10] = CreateMap(10, mapPos10, maps);
+	//maps[11] = CreateMap(11, mapPos11, maps);
 
 	LoadAllMapToFile(maps);
 
@@ -43,15 +44,15 @@ int main()
 	while (option != 6)
 	{
 		system("cls");
-		cout << "MENU:" << endl;
-		cout << "1. Create a new map" << endl;
-		cout << "2. Play" << endl;
-		cout << "3. Find path" << endl;
-		cout << "4. Edit map" << endl;
-		cout << "5. Checking" << endl;
-		cout << "6. Exit" << endl;
-		cout << "Enter your option: ";
-		cin >> option;
+		std::cout << "MENU:" << endl;
+		std::cout << "1. Create a new map" << endl;
+		std::cout << "2. Play" << endl;
+		std::cout << "3. Find path" << endl;
+		std::cout << "4. Edit map" << endl;
+		std::cout << "5. Checking" << endl;
+		std::cout << "6. Exit" << endl;
+		std::cout << "Enter your option: ";
+		std::cin >> option;
 
 		switch (option)
 		{
@@ -61,7 +62,7 @@ int main()
 				system("cls");
 				if (CountMap() >= MAX_MAP_NUMBER)
 				{
-					cout << "Full map!!";
+					std::cout << "Full map!!";
 					break;
 				}
 				Vector2 position;
@@ -70,13 +71,13 @@ int main()
 				while (isExistMap)
 				{
 					PrintMapOverview();
-					cout << "Enter map position x,y: ";
-					cin >> position.x >> position.y;
+					std::cout << "Enter map position x,y: ";
+					std::cin >> position.x >> position.y;
 
 					if (MAPOVERVIEW[position.x][position.y] == 0)
 						isExistMap = false;
 					else
-						cout << "Exist map at position " << position.x << " " << position.y << endl;
+						std::cout << "Exist map at position " << position.x << " " << position.y << endl;
 				}
 
 				maps[CountMap()+1] = CreateMap(CountMap() + 1, position, maps);
@@ -175,11 +176,12 @@ int main()
 				cout << "Enter map index you want to start: "; cin >> startMapIndex;
 				cout << "Enter map index you want to come: "; cin >> endMapIndex;
 
+				//adjancy list
 				vector<vector<int>> graph; //dynamic 2d array
-				int pathIndex = 0;
 
 				//initiate graph[0] vector which empty
 				graph.push_back({});
+
 				for (int i = 1; i <= CountMap(); i++)
 				{
 					//initiate graph[i] vector
@@ -192,7 +194,7 @@ int main()
 					}
 				}
 
-				FindPath(startMapIndex, endMapIndex, graph);
+				FindPath(startMapIndex, endMapIndex, graph, maps);
 				system("pause");
 				break;
 			}
@@ -210,13 +212,65 @@ int main()
 
 			case 5:
 			{
+				int mapNumber = CountMap();
 
+				vector<vector<string>> modulInMap;
+				string line = "";
+				bool getModulName = false;
+
+				//create empty modulInMap[0]
+				modulInMap.push_back({});
+
+				for (int i = 1; i <= mapNumber; i++)
+				{
+					modulInMap.push_back({});
+					ifstream mapFile;
+					mapFile.open(maps[i].path);
+
+					while (getline(mapFile, line))
+					{
+						if (getModulName)
+						{
+							modulInMap[i].push_back(line);
+							getModulName = false;
+						}
+
+						if (line.find("OBJ") != string::npos)
+							getModulName = true;
+						else
+							getModulName = false;
+					}
+
+					mapFile.close();
+				}
+
+				vector<string> conflictModul;
+				string modulName;
+
+				for (int i = 1; i < modulInMap.size(); i++)
+				{
+					for (int j = 0; j < modulInMap[i].size(); j++)
+					{
+						modulName = modulPath + modulInMap[i][j] + ".obj";
+						ifstream modulFile;
+						modulFile.open(modulName, ios::out);
+						if (modulFile.is_open())
+							cout << modulName << " exist in map " << i << endl;
+						else
+							cout << modulName << " doesn't exist in map " << i << endl;
+
+						modulFile.close();
+					}
+				}
+
+				system("pause");
+				break;
 			}
 
 			case 6:
 			{
 				system("cls");
-				cout << "goodbye!";
+				cout << "Goodbye!";
 				return 0;
 			}
 

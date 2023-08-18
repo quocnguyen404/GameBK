@@ -19,6 +19,9 @@ const int MAX_MAP_NUMBER = MAP_WIDTH_OVERVIEW * MAP_LENGTH_OVERVIEW;
 const int MAP_WIDTH = 11;
 const int MAP_LENGTH = 11;
 const int MAX_MAP_AROUND_NUMBER = 4;
+const int NUMBER_OF_MODULTYPE = 5;
+const int MAX_MODUL_NUM_IN_MAP = 7;
+const int MIN_MODUL_NUM_IN_MAP = 4;
 const string mapPath = "map.txt";
 const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
 const string mapFilePath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\map\\";
@@ -112,7 +115,7 @@ Vector3::Vector3(int x, int y, int z)
 }
 
 
-/*----------------[CLASS]----------------*/
+/*----------------[CLASS IDENTIFY]----------------*/
 //[MAP]
 class Map
 {
@@ -122,7 +125,7 @@ public:
 	int numberOfModul;
 	int numberOfGoto;
 	Vector2 position;
-	int mapAround[4] = {};
+	int mapAround[NUMBER_OF_MODULTYPE] = {};
 	string name;
 	string path;
 
@@ -143,6 +146,60 @@ public:
 	void GenerateFile();
 };
 
+//[MODUL]
+class Modul
+{
+public:
+	int id;
+	ModulType modulType;
+	int byte;
+	string name;
+	string path;
+	Vector3 position;
+	Vector3 scale;
+	Vector3 rotation;
+	Modul* ptr = this;
+public:
+	Modul();
+
+	Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotation);
+
+public:
+	void GenerateFile();
+};
+
+
+/*----------------[PROTOTYPE]----------------*/
+Map CreateMap(int, Vector2, Map(&)[MAX_MAP_NUMBER]); //creat a map 1
+
+void CreateModul(ModulType, Map&, int);		// 2
+Modul InitiateModul(ModulType, Map&); //input the information about object 3
+
+int CountMap(); // count map exist in file map.txt 4
+void ReadMap(Map&); // read map 5
+Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet 6
+
+int RandomInRange(int, int); //random int number in range
+Vector3 RandomVector3(int, int);  //random vector3 on ground
+Vector2 RandomVector2(int, int); // random vector2
+
+void PrintMapOverview(); //print 2d matrix overview of maps
+void LoadMapAround(Map&); //load map around of a map 7
+
+int Up(Map&); //the map above;
+int Down(Map&); //the map below
+int Right(Map&); //the map right
+int Left(Map&); //the map left
+
+void FindPath(int, int, vector<vector<int>>&, Map(&)[MAX_MAP_NUMBER]); //find path from start to end
+void FindPathRecursion(int, int, vector<bool>&, vector<int>&, vector<vector<int>>&, Map(&)[MAX_MAP_NUMBER]); //
+void PrintPath(vector<int>&, Map(&)[MAX_MAP_NUMBER]);
+
+void LoadAllMapToFile(Map(&)[MAX_MAP_NUMBER]); //load all map file to map.txt file 8
+void EditMap(Map&);
+
+/*----------------[CLASS IMPLEMENT]----------------*/
+//[MAP]
 Map::Map()
 {
 	Map::index = 0;
@@ -150,19 +207,19 @@ Map::Map()
 	Map::numberOfGoto = 0;
 	Map::position.x = 0;
 	Map::position.y = 0;
-	Map::name = "MAP" + to_string(Map::index);
-	Map::path = mapFilePath + Map::name + ".txt";
+	//Map::name = "MAP" + to_string(Map::index);
+	//Map::path = mapFilePath + Map::name + ".txt";
 }
 
 Map::Map(int index, Vector2 mapPosition)
 {
 	Map::index = index;
 	Map::position = mapPosition;
-	Map::numberOfModul = rand() % 7 + 4;
+	Map::numberOfModul = RandomInRange(MIN_MODUL_NUM_IN_MAP, MAX_MODUL_NUM_IN_MAP);
 	Map::numberOfGoto = 0;
-	Map::moduls[TREE] = rand() % (numberOfModul + 1);
-	Map::moduls[HOUSE] = rand() % (numberOfModul - Map::moduls[TREE] + 1);
-	Map::moduls[CAR] = numberOfModul - Map::moduls[CAR] - Map::moduls[HOUSE];
+	Map::moduls[TREE] = RandomInRange(0, Map::numberOfModul);
+	Map::moduls[HOUSE] = RandomInRange(0, (numberOfModul - Map::moduls[TREE]));
+	Map::moduls[CAR] = numberOfModul - Map::moduls[TREE] - Map::moduls[HOUSE];
 	Map::name = "MAP" + to_string(Map::index);
 	Map::path = mapFilePath + Map::name + ".txt";
 	GenerateFile();
@@ -180,29 +237,7 @@ void Map::GenerateFile()
 	mapFile.close();
 }
 
-
 //[MODUL]
-class Modul
-{
-public:
-	int id;
-	ModulType modulType;
-	int byte;
-	string name;
-	string path;
-	Vector3 position;
-	Vector3 scale;
-	Vector3 rotation;
-
-public:
-	Modul();
-
-	Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotation);
-
-public:
-	void GenerateFile();
-};
-
 Modul::Modul()
 {
 }
@@ -224,39 +259,18 @@ Modul::Modul(ModulType modulType, Vector3 position, Vector3 scale, Vector3 rotat
 void Modul::GenerateFile()
 {
 	ofstream modulFile;
-	modulFile.open(path, ios::trunc | ios::binary);
+	modulFile.open(path, ios::trunc);
 
 	if (!modulFile.is_open())
 		cout << "Open obj file unsuccess!" << endl;
 
-	modulFile << name << " " << &name << endl;
-	modulFile << byte << endl;
-	modulFile << &id << &position << &scale << &rotation << &path;
+	modulFile << Modul::ptr << endl;
+	modulFile << Modul::name << " " << &Modul::name << endl;
+	modulFile << Modul::byte << endl;
+	modulFile << &Modul::id << &Modul::position << &Modul::scale << &Modul::rotation << &Modul::path;
 
 	modulFile.close();
 }
-
-
-/*----------------[PROTOTYPE]----------------*/
-Map CreateMap(int, Vector2, Map(&)[MAX_MAP_NUMBER]); //creat a map 1
-void CreateModul(ModulType, Map&, int);		// 2
-Modul InitiateModul(ModulType, Map&); //input the information about object 3
-int CountMap(); // count map exist in file map.txt 4
-void ReadMap(Map&); // read map 5
-Vector3 CheckSpawn(Vector3, Map); //chech position in map that exist modul yet 6
-int RandomInRange(int, int); //random int number in range
-Vector3 RandomVector3(int, int);  //random vector3 on ground
-Vector2 RandomVector2(int, int); // random vector2
-void PrintMapOverview(); //print 2d matrix overview of maps
-void LoadMapAround(Map&); //load map around of a map 7
-int Up(Map&); //the map above;
-int Down(Map&); //the map below
-int Right(Map&); //the map right
-int Left(Map&); //the map left
-void FindPath(int, int, vector<vector<int>>&); //find path from start to end
-void FindPathRecursion(int, int, vector<bool>&, vector<int>&, vector<vector<int>>&); //
-void PrintPath(vector<int>&);
-void LoadAllMapToFile(Map(&)[MAX_MAP_NUMBER]); //load all map file to map.txt file 8
 
 
 /*----------------[FUNCTION]----------------*/
@@ -366,14 +380,15 @@ Vector3 CheckSpawn(Vector3 checkVec, Map map)
 
 int RandomInRange(int min, int max)
 {
-	return rand() % max + min;
+	int range = max - min + 1;
+	return rand() % range + min;
 }
 
 Vector3 RandomVector3(int min, int max)
 {
 	Vector3 ranVec;
-	ranVec.x = rand() % max + min;
-	ranVec.y = rand() % max + min;
+	ranVec.x = RandomInRange(min, max);
+	ranVec.y = RandomInRange(min, max);
 	ranVec.z = 1;
 	return ranVec;
 }
@@ -381,8 +396,8 @@ Vector3 RandomVector3(int min, int max)
 Vector2 RandomVector2(int min, int max)
 {
 	Vector2 ranVec;
-	ranVec.x = rand() % max + min;
-	ranVec.y = rand() % max + min;
+	ranVec.x = RandomInRange(min, max);
+	ranVec.y = RandomInRange(min, max);
 	return ranVec;
 }
 
@@ -459,26 +474,27 @@ int Left(Map& map)
 	return MAPOVERVIEW[map.position.x][map.position.y - 1]; //left
 }
 
-void FindPath(int start, int end, vector<vector<int>> &graph) {
+void FindPath(int start, int end, vector<vector<int>> &graph, Map(&maps)[MAX_MAP_NUMBER])
+{
 	int size = graph.size();
-	std::vector<bool> visited(size+1, false);
-	std::vector<int> path;
-	FindPathRecursion(start, end, visited, path, graph);
+	vector<bool> visited(size+1, false);
+	vector<int> path;
+	FindPathRecursion(start, end, visited, path, graph, maps);
 }
 
-void FindPathRecursion(int start, int end, vector<bool>& visited, vector<int> &path, vector<vector<int>> &graph) {
+void FindPathRecursion(int start, int end, vector<bool>& visited, vector<int> &path, vector<vector<int>> &graph, Map(&maps)[MAX_MAP_NUMBER]) {
 	visited[start] = true;
 	path.push_back(start);
 
 	if (start == end) 
-		PrintPath(path);
+		PrintPath(path, maps);
 	else 
 	{
 		for (int i = 0; i < graph[start].size(); i++) 
 		{
 			int next = graph[start][i];
 			if (!visited[next]) 
-				FindPathRecursion(next, end, visited, path, graph);
+				FindPathRecursion(next, end, visited, path, graph, maps);
 		}
 	}
 
@@ -487,20 +503,41 @@ void FindPathRecursion(int start, int end, vector<bool>& visited, vector<int> &p
 	visited[start] = false;
 }
 
-void PrintPath(vector<int>& path) 
+void PrintPath(vector<int>& path, Map(&maps)[MAX_MAP_NUMBER])
 {
+	int numberOfModulOnPath[NUMBER_OF_MODULTYPE] = {};
+
+	numberOfModulOnPath[NONE] = 0;
 	for (int i = 0; i < path.size(); i++) 
 	{
+		numberOfModulOnPath[TREE] += maps[path[i]].moduls[TREE];
+		numberOfModulOnPath[HOUSE] += maps[path[i]].moduls[HOUSE];
+		numberOfModulOnPath[CAR] += maps[path[i]].moduls[CAR];
+		numberOfModulOnPath[GOTO] += maps[path[i]].moduls[GOTO];
+
 		cout << path[i];
 		if (i != path.size() - 1) 
 			cout << "->";
 	}
-	cout << endl;
+
+	int biggestNum = 0;
+	ModulType mostAppearModul = NONE; //NONE
+	for (int i = 0; i < NUMBER_OF_MODULTYPE; i++)
+	{
+		if (numberOfModulOnPath[i] > biggestNum)
+		{
+			biggestNum = numberOfModulOnPath[i];
+			mostAppearModul = (ModulType)i;
+		}
+	}
+
+	cout << "\t " << "Most appear modul is " << ModulTypeConvert[mostAppearModul] << ": " << biggestNum << endl;
 }
 
 void LoadAllMapToFile(Map(&maps)[MAX_MAP_NUMBER])
 {
-	ofstream allMap(mapPath, ios::trunc);
+	ofstream allMap;
+	allMap.open(mapPath, ios::trunc);
 
 	for (int i = 0; i < MAX_MAP_NUMBER; i++)
 	{
@@ -550,6 +587,7 @@ void EditMap(Map &map)
 				cin >> quantity;
 
 				CreateModul(modulType, map, quantity);
+				map.moduls[modulType] += quantity;
 				system("cls");
 				cout << "Add new modul success!" << endl;
 				break;
