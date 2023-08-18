@@ -1,3 +1,3 @@
 ﻿  main.cpp
-C:\projects\Cpp\GameBKProject\gameBK\Header\common.h(467,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\projects\Cpp\GameBKProject\gameBK\Header\common.h(463,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   gameBK.vcxproj -> C:\projects\Cpp\GameBKProject\gameBK\x64\Debug\gameBK.exe

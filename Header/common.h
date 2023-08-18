@@ -308,11 +308,11 @@ Modul InitiateModul(ModulType modulType, Map &map)
 {
 	Vector3 modPos = RandomVector3(0, MAP_WIDTH); //initiate random position for modul
 	modPos = CheckSpawn(modPos, map); // checking on map position is exist any modul
-	Vector3 modScale(1, 1, 1);
-	Vector3 modRotate = RandomVector3(0, 360);
-	map.MAP[modPos.x][modPos.y] = modulType;
+	Vector3 modScale(1, 1, 1); //initiate scale
+	Vector3 modRotate = RandomVector3(0, 360); //initiate rotation
+	map.MAP[modPos.x][modPos.y] = modulType; //update modul position to map
 	Modul modul(modulType, modPos, modScale, modRotate);
-	//modul.AddToMap(mapPath);
+
 	return modul;
 } //Nhat
 
@@ -342,20 +342,16 @@ int CountMap()
 
 void ReadMap(Map &map)
 {
-
 	ifstream inputFile;
 	inputFile.open(map.path);
 	
 	int mapCount = 0;
 	string line;
-	string content;
 
 	while (getline(inputFile, line))
 		cout << line << endl;
 
 	inputFile.close();
-
-	cout << content;
 } //Phong
 
 Vector3 CheckSpawn(Vector3 checkVec, Map map)
@@ -541,17 +537,17 @@ void EditMap(Map &map)
 			{
 				int input = 0;
 				int quantity = 0;
+
 				cout << "1. Tree" << endl;
 				cout << "2. House" << endl;
 				cout << "3. Car" << endl;
-				cout << "Choose the modul you want to add";
+				cout << "Choose the modul you want to add: ";
 				cin >> input;
-
-				ModulType modulType = (ModulType)input;
 
 				cout << "How many " << ModulTypeConvert[modulType] << " you want to add: ";
 				cin >> quantity;
 
+				ModulType modulType = (ModulType)input;
 				CreateModul(modulType, map, quantity);
 				system("cls");
 				cout << "Add new modul success!" << endl;
@@ -560,33 +556,41 @@ void EditMap(Map &map)
 
 			case 2:
 			{
+				system("cls");
+				
+				ReadMap(map);
+				
 				string editModulName = "";
 				Vector3 customsPos;
-				system("cls");
-				ReadMap(map);
-				cout << "Enter modul name you want to change position: ";
-				cin.ignore();
+				
+				cout << "Enter modul name you want to change position: "; cin.ignore();
 				getline(cin, editModulName);
+
 				cout << "Enter modul position(x, y, z): ";
 				cin >> customsPos.x >> customsPos.y >> customsPos.z;
 				
-				string change = to_string(customsPos.x) + "," + to_string(customsPos.y) + "," + to_string(customsPos.z);
+				string updateLine = to_string(customsPos.x) + "," + to_string(customsPos.y) + "," + to_string(customsPos.z);
 				string line = "";
+				vector<string> content;
 				bool ableToEdit = false;
+				bool isExistModul = false;
 
-				fstream mapFile;
-				mapFile.open(map.path, ios::in | ios::out);
+				ifstream mapIn;
+				mapIn.open(map.path, ios::in);
 
-				if (!mapFile.is_open())
+				if (!mapIn.is_open())
 					cout << "Open file fail." << endl;
 
-				while (getline(mapFile, line))
+				while (getline(mapIn, line))
 				{
 					if (ableToEdit)
 					{
-						mapFile << change;
+						content.push_back(updateLine);
 						ableToEdit = false;
+						isExistModul = true;
 					}
+					else
+						content.push_back(line);
 
 					if (line == editModulName)
 						ableToEdit = true;
@@ -594,9 +598,22 @@ void EditMap(Map &map)
 						ableToEdit = false;
 				}
 
-				if (!ableToEdit)
+				if (!isExistModul)
 					cout << "Doesn't exist " << editModulName << endl;
-				mapFile.close();
+
+				mapIn.close();
+
+				ofstream mapOut;
+				mapOut.open(map.path, ios::out);
+
+				if (!mapOut.is_open())
+					cout << "Open file fail." << endl;
+
+				for (int i = 0; i < content.size(); i++)
+					mapOut << content[i] << endl;
+
+				mapOut.close();
+
 				break;
 			}
 
