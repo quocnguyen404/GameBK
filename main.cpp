@@ -13,9 +13,9 @@ int main()
 	Vector2 mapPos1(1, 1);
 	Vector2 mapPos2(1, 2);
 	Vector2 mapPos3(1, 3);
-	Vector2 mapPos4(1, 4);
+	/*Vector2 mapPos4(1, 4);
 	Vector2 mapPos5(2, 4);
-	Vector2 mapPos6(3, 4);
+	Vector2 mapPos6(3, 4);*/
   /*Vector2 mapPos7(2, 1);
 	Vector2 mapPos8(2, 2);
 	Vector2 mapPos9(2, 3);
@@ -25,9 +25,10 @@ int main()
 	maps[1] = CreateMap(1, mapPos1, maps);
 	maps[2] = CreateMap(2, mapPos2, maps);
 	maps[3] = CreateMap(3, mapPos3, maps);
-	maps[4] = CreateMap(4, mapPos4, maps);
+
+	/*maps[4] = CreateMap(4, mapPos4, maps);
 	maps[5] = CreateMap(5, mapPos5, maps);
-	maps[6] = CreateMap(6, mapPos6, maps);
+	maps[6] = CreateMap(6, mapPos6, maps);*/
 
 	//maps[7] = CreateMap(7, mapPos7, maps);
 	//maps[8] = CreateMap(8, mapPos8, maps);
