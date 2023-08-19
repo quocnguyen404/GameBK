@@ -265,9 +265,9 @@ void Modul::GenerateFile()
 		cout << "Open obj file unsuccess!" << endl;
 
 	modulFile << Modul::ptr << endl;
-	modulFile << Modul::name << " " << &Modul::name << endl;
+	modulFile << Modul::name << endl;
 	modulFile << Modul::byte << endl;
-	modulFile << &Modul::id << &Modul::position << &Modul::scale << &Modul::rotation << &Modul::path;
+	modulFile << &id << &position << &scale << &rotation << &path;
 
 	modulFile.close();
 }
@@ -587,6 +587,7 @@ void EditMap(Map &map)
 				cin >> quantity;
 
 				CreateModul(modulType, map, quantity);
+				map.numberOfModul += quantity;
 				map.moduls[modulType] += quantity;
 				system("cls");
 				cout << "Add new modul success!" << endl;
