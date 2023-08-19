@@ -12,6 +12,11 @@
 
 using namespace std;
 
+/*
+C:\\projects\\Cpp\\GameBKProject\\gameBK\\ 
+C:\\projects\\Cpp\\GameBKProject\\gameBK\\
+*/
+
 /*-----------[CONSTANTS]-----------*/
 const int MAP_WIDTH_OVERVIEW = 5;
 const int MAP_LENGTH_OVERVIEW = 5;
@@ -22,9 +27,9 @@ const int MAX_MAP_AROUND_NUMBER = 4;
 const int NUMBER_OF_MODULTYPE = 5;
 const int MAX_MODUL_NUM_IN_MAP = 7;
 const int MIN_MODUL_NUM_IN_MAP = 4;
-const string mapPath = "map.txt";
-const string modulPath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\modul\\";
-const string mapFilePath = "C:\\projects\\Cpp\\GameBKProject\\gameBK\\map\\";
+const string mapPath = "map.txt"; 
+const string modulPath = "modul\\";
+const string mapFilePath = "map\\";
 const string objSubfix = ".obj";
 
 
